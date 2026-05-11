@@ -1,0 +1,6 @@
+#ifndef PERIPHERAL_INTERRUPT_H_
+#define PERIPHERAL_INTERRUPT_H_
+
+#include "mcu.h"
+
+#endif /* PERIPHERAL_INTERRUPT_H_ */
