@@ -1,9 +1,8 @@
-#include <stdio.h>
-
 #include "rcc.h"
 #include "flash.h"
 #include "gpio.h"
 #include "uart.h"
+#include "adc.h"
 
 #define mainWAITE_STATE ( 0x00U )
 #define mainBAUD_RATE   ( 115200U )
@@ -20,6 +19,8 @@ int main( void )
 
 	UART_Init( mainBAUD_RATE );
 
+	ADC_Init();
+
 	while ( 1 )
 	{
 		printf( "Hello\n" );
@@ -28,7 +29,6 @@ int main( void )
 			/* code */
 		}
 	}
-	
 
 	return 0;
 }

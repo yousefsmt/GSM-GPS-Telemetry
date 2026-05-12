@@ -3,4 +3,6 @@
 
 #include "mcu.h"
 
+void ADC_Init( void );
+
 #endif /* PERIPHERAL_ADC_H_ */
