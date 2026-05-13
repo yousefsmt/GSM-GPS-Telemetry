@@ -5,7 +5,7 @@
  * TODO: Implement NMEA GPS message parser. Incoming message from NEO-6M with UART1 connection
  * TODO: Implement SIM800L connection with UART3. Handle AT-Command
  */
-void UART_Init( uint32_t baud_rate )
+void uart2_init( uint32_t baud_rate )
 {
 	/**
 	 * printf logging method

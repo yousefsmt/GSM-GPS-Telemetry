@@ -42,8 +42,9 @@ target_link_directories(${CMAKE_PROJECT_NAME} PRIVATE
     # Add user defined library search paths
 )
 
-# Add sources to executable
+# Add sources to executable 
 target_sources(${CMAKE_PROJECT_NAME} PRIVATE
+	# Peripheral interface
     Peripheral/Src/adc.c
 	Peripheral/Src/gpio.c
 	Peripheral/Src/interrupt.c
@@ -51,11 +52,15 @@ target_sources(${CMAKE_PROJECT_NAME} PRIVATE
 	Peripheral/Src/timer.c
 	Peripheral/Src/uart.c
 	Peripheral/Src/flash.c
+
+	#System Health
+	Common/Src/system_health.c
 )
 
 # Add include paths
 target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE
     Peripheral/Inc
+	Common/Inc
 )
 
 # Add project symbols (macros)

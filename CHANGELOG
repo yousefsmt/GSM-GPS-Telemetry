@@ -1,0 +1,16 @@
+# Changelog
+
+All notable changes to this project will be documented in this file.
+
+## [0.1.0] - 2023-03-05
+
+### Added
+
+- Add specific API peripheral
+- Integrate with "FreeRTOS Kernel V11.1.0"
+- Add loggong mechanism based on USART printf
+- Add system health monitor based on internal temperature sensor
+- Enable analog watch dog for adc (AWD)
+
+
+[0.1.0]: https://github.com/olivierlacan/keep-a-changelog/releases/tag/v0.0.1

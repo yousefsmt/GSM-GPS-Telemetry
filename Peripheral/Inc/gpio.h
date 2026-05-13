@@ -4,5 +4,5 @@
 #include "mcu.h"
 
 
-void GPIO_Init( void );
+void gpio_init( void );
 #endif /* PERIPHERAL_GPIO_H_ */

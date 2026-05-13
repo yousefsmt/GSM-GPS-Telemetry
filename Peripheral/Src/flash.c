@@ -1,6 +1,6 @@
 #include "flash.h"
 
-void FLASH_ConfigWaitState( uint32_t wate_state )
+void flash_set_latency( uint32_t wate_state )
 {
 	FLASH->ACR &= ~( FLASH_ACR_HLFCYA | FLASH_ACR_PRFTBE | FLASH_ACR_LATENCY );
 

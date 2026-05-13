@@ -3,6 +3,6 @@
 
 #include "mcu.h"
 
-void UART_Init( uint32_t baud_rate );
+void uart2_init( uint32_t baud_rate );
 
 #endif /* PERIPHERAL_UART_H_ */

@@ -10,6 +10,6 @@
  * 
  * This function sets up the prefetch buffer and latency between CPU and Flash memory, with wait state setting.
  */
-void FLASH_ConfigWaitState( uint32_t wate_state );
+void flash_set_latency( uint32_t wate_state );
 
 #endif /* PERIPHERAL_FLASH_H_ */

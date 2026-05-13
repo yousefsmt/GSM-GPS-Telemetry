@@ -1,6 +1,6 @@
 #include "gpio.h"
 
-void GPIO_Init( void )
+void gpio_init( void )
 {
 	RCC->APB2ENR |= RCC_APB2ENR_IOPAEN;
 }
