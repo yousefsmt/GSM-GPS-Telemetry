@@ -99,7 +99,7 @@ void adc1_init( void )
 	adc1_calibrate();
 
 	/* Add ADC1 to interrupt vector */
-	NVIC_EnableIRQ( ADC1_IRQn );
+	// NVIC_EnableIRQ( ADC1_IRQn );
 }
 
 void adc1_awd_init(ADC_TypeDef *adc, uint32_t high_threshold, uint32_t low_threshold)

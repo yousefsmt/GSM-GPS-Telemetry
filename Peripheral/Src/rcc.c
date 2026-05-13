@@ -67,14 +67,14 @@ uint32_t get_mco_clock( void )
 {
 	switch ( ( RCC->CFGR & RCC_CFGR_MCO ) )
 	{
-	case 0b000:
+	case 0b000000000000000000000000000:
 		return 0x00U;
-	case 0b100:
-	case 0b110:
+	case 0b100000000000000000000000000:
+	case 0b110000000000000000000000000:
 		return get_sys_clock();
-	case 0b101:
+	case 0b101000000000000000000000000:
 		return 8000000U;
-	case 0b111:
+	case 0b111000000000000000000000000:
 		return get_pll_clock() / 2;
 	default:
 		return 1;
@@ -90,13 +90,13 @@ uint32_t get_rtc_clock( void )
 {
 	switch ( ( RCC->BDCR & RCC_BDCR_RTCSEL ) )
 	{
-	case 0b00:
+	case 0b0000000000:
 		return 0;
-	case 0b01:
+	case 0b0100000000:
 		return 32768;
-	case 0b10:
+	case 0b1000000000:
 		return 40000;
-	case 0b11:
+	case 0b1100000000:
 		return get_sys_clock() / 128;
 	default:
 		break;
@@ -109,9 +109,9 @@ uint32_t get_pll_clock( void )
 {
 	switch ( ( RCC->CFGR & RCC_CFGR_PLLSRC ) )
 	{
-	case 0x00:
+	case 0b000000000000000000:
 		return ( ( RCC->CFGR & RCC_CFGR_PLLMULL_Msk ) + 2 ) * 4;
-	case 0x01:
+	case 0b010000000000000000:
 		return ( ( RCC->CFGR & RCC_CFGR_PLLMULL_Msk ) + 2 ) * ( SystemCoreClock / 1000 );
 	default:
 		break;
@@ -148,17 +148,17 @@ uint32_t get_usb_clock( void )
 	uint32_t pllclk = 0;
 	switch ( ( RCC->CFGR & RCC_CFGR_PLLSRC ) )
 	{
-	case 0x00:
+	case 0b000000000000000000:
 		pllclk =  ( ( RCC->CFGR & RCC_CFGR_PLLMULL_Msk ) + 2 ) * 4;
 		break;
-	case 0x01:
+	case 0b010000000000000000:
 		pllclk = ( ( RCC->CFGR & RCC_CFGR_PLLMULL_Msk ) + 2 ) * ( SystemCoreClock / 1000 );
 		break;
 	default:
 		break;
 	}
 
-	return ( ( RCC->CFGR & RCC_CFGR_USBPRE ) ) ? pllclk : pllclk / ( 1.5 );
+	return ( ( RCC->CFGR & RCC_CFGR_USBPRE ) ) ? pllclk : ( pllclk / ( 1.5 ) );
 }
 
 uint32_t get_flitf_clock( void )
@@ -178,13 +178,13 @@ uint32_t get_adc_clock( uint32_t apb2_clk )
 {
 	switch ( ( RCC->CFGR & RCC_CFGR_ADCPRE ) )
 	{
-	case 0b00:
-		return apb2_clk / 1;
-	case 0b01:
+	case RCC_CFGR_ADCPRE_DIV2:
 		return apb2_clk / 2;
-	case 0b10:
+	case RCC_CFGR_ADCPRE_DIV4:
 		return apb2_clk / 4;
-	case 0b11:
+	case RCC_CFGR_ADCPRE_DIV6:
+		return apb2_clk / 6;
+	case RCC_CFGR_ADCPRE_DIV8:
 		return apb2_clk / 8;
 	default:
 		break;
@@ -221,31 +221,31 @@ uint32_t get_ahb_clock( void )
 
 	switch ( ( RCC->CFGR & RCC_CFGR_HPRE ) )
 	{
-	case 0b0000:
+	case 0b00000000:
 		ahb_clk /= 1;
 		break;
-	case 0b1000:
+	case 0b10000000:
 		ahb_clk /= 2;
 		break;
-	case 0b1001:
+	case 0b10010000:
 		ahb_clk /= 4;
 		break;
-	case 0b1010:
+	case 0b10100000:
 		ahb_clk /= 8;
 		break;
-	case 0b1011:
+	case 0b10110000:
 		ahb_clk /= 16;
 		break;
-	case 0b1100:
+	case 0b11000000:
 		ahb_clk /= 64;
 		break;
-	case 0b1101:
+	case 0b11010000:
 		ahb_clk /= 128;
 		break;
-	case 0b1110:
+	case 0b11100000:
 		ahb_clk /= 256;
 		break;
-	case 0b1111:
+	case 0b11110000:
 		ahb_clk /= 512;
 		break;
 	default:
@@ -262,19 +262,19 @@ uint32_t get_apb1_clock( void )
 
 	switch ( ( RCC->CFGR & RCC_CFGR_PPRE1 ) )
 	{
-	case 0b000:
+	case 0b00000000000:
 		apb1_clk /= 1;
 		break;
-	case 0b100:
+	case 0b10000000000:
 		apb1_clk /= 2;
 		break;
-	case 0b101:
+	case 0b10100000000:
 		apb1_clk /= 4;
 		break;
-	case 0b110:
+	case 0b11000000000:
 		apb1_clk /= 8;
 		break;
-	case 0b111:
+	case 0b11100000000:
 		apb1_clk /= 16;
 		break;
 	default:
@@ -291,19 +291,19 @@ uint32_t get_apb2_clock( void )
 
 	switch ( ( RCC->CFGR & RCC_CFGR_PPRE2 ) )
 	{
-	case 0b000:
+	case 0b00000000000000:
 		apb2_clk /= 1;
 		break;
-	case 0b100:
+	case 0b10000000000000:
 		apb2_clk /= 2;
 		break;
-	case 0b101:
+	case 0b10100000000000:
 		apb2_clk /= 4;
 		break;
-	case 0b110:
+	case 0b11000000000000:
 		apb2_clk /= 8;
 		break;
-	case 0b111:
+	case 0b11100000000000:
 		apb2_clk /= 16;
 		break;
 	default:

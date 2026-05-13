@@ -22,22 +22,18 @@ int main( void )
 	uart2_init( mainBAUD_RATE );
 
 	adc1_init();
-	adc1_awd_init(ADC1, 80, 20);
-	tim2_init();
+	// adc1_awd_init(ADC1, 80, 20);
+	// tim2_init();
 
-	interrupt_set_priorites();
+	// interrupt_set_priorites();
 
-	/*---------------------------------------*/
 	uint32_t ahb_clk  = get_ahb_clock();
 	uint32_t apb1_clk = get_apb1_clock();
 	uint32_t apb2_clk = get_apb2_clock();
-	/*---------------------------------------*/
 
-	/*---------------------------------------*/
 	uint32_t adc_clk = get_adc_clock( apb2_clk );
 	uint32_t tim1_clk = get_tim1_clock( apb1_clk );
 	uint32_t timx_clk = get_timx_clock( TIM2, apb1_clk );
-	/*---------------------------------------*/
 
 	uint32_t mco_clk    = get_mco_clock();
 	uint32_t iwdg_clk   = get_iwdg_clock();
@@ -49,23 +45,25 @@ int main( void )
 	uint32_t free_clk   = get_free_clock();
 	uint32_t cortex_clk = get_cortex_clock();
 
-	printf( "%ld\n",ahb_clk );
-	printf( "%ld\n",apb1_clk );
-	printf( "%ld\n",apb2_clk );
-
-	printf( "%ld\n",adc_clk );
-	printf( "%ld\n",tim1_clk );
-	printf( "%ld\n",timx_clk );
-
-	printf( "%ld\n", mco_clk);
-	printf( "%ld\n", iwdg_clk);
-	printf( "%ld\n", rtc_clk);
-	printf( "%ld\n", pll_clk);
-	printf( "%ld\n", sys_clk);
-	printf( "%ld\n", usb_clk);
-	printf( "%ld\n", flitf_clk);
-	printf( "%ld\n", free_clk);
-	printf( "%ld\n", cortex_clk);
+	/**
+	 * Remove debug variable for increase stack size
+	 * if you want check param please set breakpoint after "get_cortex_clock" call
+	 */
+	( void )ahb_clk;
+	( void )apb1_clk;
+	( void )apb2_clk;
+	( void )adc_clk;
+	( void )tim1_clk;
+	( void )timx_clk;
+	( void )mco_clk;
+	( void )iwdg_clk; 
+	( void )rtc_clk;
+	( void )pll_clk;  
+	( void )sys_clk;  
+	( void )usb_clk; 
+	( void )flitf_clk;  
+	( void )free_clk; 
+	( void )cortex_clk;
 
 	while ( 1 )
 	{
