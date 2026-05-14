@@ -17,6 +17,7 @@
 			GPIOC->BSRR = GPIO_BSRR_BS13;	\
 		}
 #else
+	#define toggle_pin()
 	#define LOG( msg... )
 #endif /* DEBUG */
 

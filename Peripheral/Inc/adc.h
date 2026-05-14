@@ -3,12 +3,16 @@
 
 #include "mcu.h"
 
+#define ADC1_AWD_HTR ( 0x5c9U ) /* 80 C */
+#define ADC1_AWD_LTR ( 0x7a9U ) /* -10 C */
+
+
 #define ADC1_SENSE_PIN  ( 16 )
 #define ADC1_REFINT_PIN ( 17 )
 
-#define TIM2_CC2_EVENT  ( 0x03 )
+#define TIM3_TRGO_EVENT  ( 0x04U )
 
-void adc1_awd_init(ADC_TypeDef *adc, uint32_t high_threshold, uint32_t low_threshold);
+void adc1_awd_init();
 
 void adc1_init( void );
 

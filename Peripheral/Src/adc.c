@@ -20,16 +20,6 @@ static void adc1_set_pll( void )
 	 * NOTE: In some reference say if ADCCLK in lower better accuracy ( I must to be check deeply!! )
 	 */
 
-	// /* Enable PLL */
-	// if ( ( RCC->CR & RCC_CR_PLLRDY ) == 0 )
-	// {
-	// 	RCC->CR |= RCC_CR_PLLON;
-	// 	while ( ( RCC->CR & RCC_CR_PLLRDY ) == 0) { }
-	// }
-
-	/* Clear AHB and APB2 prescaler */
-	// RCC->CFGR &= ~( RCC_CFGR_HPRE | RCC_CFGR_PPRE2 );
-
 	/* Set /2 ADC PLL */
 	RCC->CFGR |= RCC_CFGR_ADCPRE_DIV2;
 	
@@ -55,7 +45,7 @@ static void adc1_config( void )
 	 * Set external trigger to TIM2_CC2_EVENT
 	 */
 	ADC1->CR2 |= ADC_CR2_EXTTRIG;
-	ADC1->CR2 |= ( 0x04 << ADC_CR2_EXTSEL_Pos );
+	ADC1->CR2 |= ( TIM3_TRGO_EVENT << ADC_CR2_EXTSEL_Pos );
 
 	/* Enable internal temperature sensor */
 	ADC1->CR2 |= ADC_CR2_TSVREFE;
@@ -80,11 +70,12 @@ static void adc1_config( void )
 }
 
 /*-------------------------------------------------------------------------------------------------*/
+#ifdef MONITOR_INTERNALL_TEMP
 /**
  * Below function is very expensive for processor
  * TODO: You must optimize below two function for don't use floating-point number
  */
-static uint32_t temprature_to_adc_value( float temp )
+static uint32_t temprature_to_adc_value( const float temp )
 {
 	const float REFERENCE_VOLTAGE = 3.3;    /* Reference Voltage*/
 	const float AVERAGE_SLOPE     = 0.0043; /* 4.3 mV/C */
@@ -106,7 +97,7 @@ static uint32_t temprature_to_adc_value( float temp )
 	return adc_value;
 }
 
-static float adc_value_to_temprature( uint32_t adc_value )
+static float adc_value_to_temprature( const uint32_t adc_value )
 {
 	const float REFERENCE_VOLTAGE = 3.3;    /* Reference Voltage*/
 	const float AVERAGE_SLOPE     = 0.0043; /* 4.3 mV/C */
@@ -127,6 +118,7 @@ static float adc_value_to_temprature( uint32_t adc_value )
 
 	return temp;
 }
+#endif
 /*-------------------------------------------------------------------------------------------------*/
 
 /**
@@ -149,14 +141,18 @@ void adc1_init( void )
 	adc1_calibrate();
 }
 
-void adc1_awd_init(ADC_TypeDef *adc, uint32_t high_threshold, uint32_t low_threshold)
+void adc1_awd_init()
 {
-	adc->HTR = high_threshold;
-	adc->LTR = low_threshold;
+	ADC1->HTR = ADC1_AWD_HTR;/* 80 C */
+	ADC1->LTR = ADC1_AWD_LTR;/* -10 C */
 
-	adc->CR1 |= ( ADC1_SENSE_PIN << ADC_CR1_AWDCH_Pos );
+	ADC1->CR1 |= ADC1_SENSE_PIN;
 
-	adc->CR1 |= ( ADC_CR1_AWDIE | ADC_CR1_AWDEN );
+	// Enable the Analog watchdog on a single channel in regular channels
+	ADC1->CR1 |= (ADC_CR1_AWDSGL | ADC_CR1_AWDEN);
+
+	// Enable Analog watchdog interrupts
+	ADC1->CR1 |= (ADC_CR1_AWDIE);
 }
 
 
@@ -176,10 +172,6 @@ void ADC1_2_IRQHandler( void )
 	if (ADC1->SR & ADC_SR_AWD)
 	{
 		ADC1->SR &= ~ADC_SR_AWD;
-
-		// error_handler_send_msg_from_isr(EVT_SYS_HEALTH_AWDG_THRESHOLD_EXCEEDED);
-
-		// mcu_temp_ok = false;
 	}
 	
 	/**
@@ -187,16 +179,6 @@ void ADC1_2_IRQHandler( void )
 	 */
 	if (ADC1->SR & ADC_SR_EOC)
 	{
-		toggle_pin();
-		// Toggle GPIO pin (used for debugging and signaling purposes)
-		//    gpio_toggle_pin(USER_LED_PORT, USER_LED_PIN);
-
-		// Read the ADC value from the temperature sensor
-		// adc_temp_val = ADC1->DR;
-
-		// Set the conversion complete flag
-		// ADC1_CONVERSION_COMPLETE = 1;
-
 		/* Clear EOC flag */
 		ADC1->SR &= ~ADC_SR_EOC;
 	}
