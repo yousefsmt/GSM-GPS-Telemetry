@@ -20,15 +20,15 @@ static void adc1_set_pll( void )
 	 * NOTE: In some reference say if ADCCLK in lower better accuracy ( I must to be check deeply!! )
 	 */
 
-	/* Enable PLL */
-	if ( ( RCC->CR & RCC_CR_PLLRDY ) == 0 )
-	{
-		RCC->CR |= RCC_CR_PLLON;
-		while ( ( RCC->CR & RCC_CR_PLLRDY ) == 0) { }
-	}
+	// /* Enable PLL */
+	// if ( ( RCC->CR & RCC_CR_PLLRDY ) == 0 )
+	// {
+	// 	RCC->CR |= RCC_CR_PLLON;
+	// 	while ( ( RCC->CR & RCC_CR_PLLRDY ) == 0) { }
+	// }
 
 	/* Clear AHB and APB2 prescaler */
-	RCC->CFGR &= ~( RCC_CFGR_HPRE | RCC_CFGR_PPRE2 );
+	// RCC->CFGR &= ~( RCC_CFGR_HPRE | RCC_CFGR_PPRE2 );
 
 	/* Set /2 ADC PLL */
 	RCC->CFGR |= RCC_CFGR_ADCPRE_DIV2;
@@ -55,7 +55,7 @@ static void adc1_config( void )
 	 * Set external trigger to TIM2_CC2_EVENT
 	 */
 	ADC1->CR2 |= ADC_CR2_EXTTRIG;
-	ADC1->CR2 |= ( TIM2_CC2_EVENT << ADC_CR2_EXTSEL_Pos );
+	ADC1->CR2 |= ( 0x04 << ADC_CR2_EXTSEL_Pos );
 
 	/* Enable internal temperature sensor */
 	ADC1->CR2 |= ADC_CR2_TSVREFE;
@@ -79,6 +79,56 @@ static void adc1_config( void )
 	ADC1->CR2 |= ADC_CR2_ADON;
 }
 
+/*-------------------------------------------------------------------------------------------------*/
+/**
+ * Below function is very expensive for processor
+ * TODO: You must optimize below two function for don't use floating-point number
+ */
+static uint32_t temprature_to_adc_value( float temp )
+{
+	const float REFERENCE_VOLTAGE = 3.3;    /* Reference Voltage*/
+	const float AVERAGE_SLOPE     = 0.0043; /* 4.3 mV/C */
+	const float VOLTAGE_25        = 1.43;   /* Voltage at 25 C*/
+
+	/**
+	 * RM0008 Reference Manual ( DS5319 Rev 20 )
+	 * temp = ( ( VOLTAGE_25 - adc_value ) / AVERAGE_SLOPE ) + 25
+	 * now I used with reverse formula for convert Temp to adc_value
+	 * 
+	 */
+	float voltage = ( VOLTAGE_25 - ( AVERAGE_SLOPE * ( temp - 25.0 ) ) );
+
+	/**
+	 * Convert voltage to adc bits
+	 */
+	uint32_t adc_value = ( voltage / REFERENCE_VOLTAGE ) * 4095.0;
+
+	return adc_value;
+}
+
+static float adc_value_to_temprature( uint32_t adc_value )
+{
+	const float REFERENCE_VOLTAGE = 3.3;    /* Reference Voltage*/
+	const float AVERAGE_SLOPE     = 0.0043; /* 4.3 mV/C */
+	const float VOLTAGE_25        = 1.43;   /* Voltage at 25 C*/
+
+	/**
+	 * Convert voltage to adc bits
+	 */
+	float voltage = ( ( REFERENCE_VOLTAGE * ( float )adc_value ) / 4095.0 );
+
+	/**
+	 * RM0008 Reference Manual ( DS5319 Rev 20 )
+	 * temp = ( ( VOLTAGE_25 - adc_value ) / AVERAGE_SLOPE ) + 25
+	 * now I used with reverse formula for convert Temp to adc_value
+	 * 
+	 */
+	float temp = ( ( VOLTAGE_25 - voltage ) / AVERAGE_SLOPE ) + 25.0;
+
+	return temp;
+}
+/*-------------------------------------------------------------------------------------------------*/
+
 /**
  * The The temperature sensor is internally
  * connected to the ADC12_IN16 and must be enable ADC_CR2_TSVREFE
@@ -97,9 +147,6 @@ void adc1_init( void )
 
 	/* After turned on based RM0008 (reference manual) section 11.4 */
 	adc1_calibrate();
-
-	/* Add ADC1 to interrupt vector */
-	// NVIC_EnableIRQ( ADC1_IRQn );
 }
 
 void adc1_awd_init(ADC_TypeDef *adc, uint32_t high_threshold, uint32_t low_threshold)
@@ -112,12 +159,45 @@ void adc1_awd_init(ADC_TypeDef *adc, uint32_t high_threshold, uint32_t low_thres
 	adc->CR1 |= ( ADC_CR1_AWDIE | ADC_CR1_AWDEN );
 }
 
-void ADC_IRQHandler(void)
-{
-	if(ADC1->SR & ADC_SR_AWD)
-	{
-		// watchDogTrig=1;
-		ADC1->SR &=~ADC_SR_AWD;
 
+/**
+ * When interrupt occur this function check why happend?
+ */
+void ADC1_2_IRQHandler( void )
+{
+	/**
+	 * TODO: Check AWD occur
+	 * TODO: Check End Of Conversion
+	 */
+
+	/**
+	 * Check AWD occur break high or low threshold
+	 */
+	if (ADC1->SR & ADC_SR_AWD)
+	{
+		ADC1->SR &= ~ADC_SR_AWD;
+
+		// error_handler_send_msg_from_isr(EVT_SYS_HEALTH_AWDG_THRESHOLD_EXCEEDED);
+
+		// mcu_temp_ok = false;
+	}
+	
+	/**
+	 * Check end of conversion
+	 */
+	if (ADC1->SR & ADC_SR_EOC)
+	{
+		toggle_pin();
+		// Toggle GPIO pin (used for debugging and signaling purposes)
+		//    gpio_toggle_pin(USER_LED_PORT, USER_LED_PIN);
+
+		// Read the ADC value from the temperature sensor
+		// adc_temp_val = ADC1->DR;
+
+		// Set the conversion complete flag
+		// ADC1_CONVERSION_COMPLETE = 1;
+
+		/* Clear EOC flag */
+		ADC1->SR &= ~ADC_SR_EOC;
 	}
 }

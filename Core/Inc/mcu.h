@@ -6,6 +6,16 @@
 
 #ifdef DEBUG
 	#define LOG( msg... ) printf( msg )
+
+	#define toggle_pin() \
+		if (GPIOC->ODR & GPIO_ODR_ODR13) 	\
+		{                                	\
+			GPIOC->BSRR = GPIO_BSRR_BR13;	\
+		}									\
+		else								\
+		{									\
+			GPIOC->BSRR = GPIO_BSRR_BS13;	\
+		}
 #else
 	#define LOG( msg... )
 #endif /* DEBUG */

@@ -21,11 +21,11 @@ int main( void )
 
 	uart2_init( mainBAUD_RATE );
 
+	tim3_init();
 	adc1_init();
 	// adc1_awd_init(ADC1, 80, 20);
-	// tim2_init();
 
-	// interrupt_set_priorites();
+	interrupt_set_priorites();
 
 	uint32_t ahb_clk  = get_ahb_clock();
 	uint32_t apb1_clk = get_apb1_clock();
@@ -65,14 +65,7 @@ int main( void )
 	( void )free_clk; 
 	( void )cortex_clk;
 
-	while ( 1 )
-	{
-		printf( "Hello\n" );
-		for (volatile unsigned int i = 0; i < 100000; i++)
-		{
-			/* code */
-		}
-	}
+	while ( 1 ) { }
 
 	return 0;
 }
