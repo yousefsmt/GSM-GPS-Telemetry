@@ -1,3 +1,6 @@
+#include "FreeRTOS.h"
+#include "FreeRTOSTasks.h"
+
 #include "rcc.h"
 #include "flash.h"
 #include "gpio.h"
@@ -98,4 +101,9 @@ static void parse_buffer(const char* buffer, const uint32_t buffer_size )
 	uint32_t idx = buffer_size - DMA1_Channel5->CNDTR;
 
 	/* Can I parse NMEA message here???? */
+}
+
+void vApplicationStackOverflowHook( TaskHandle_t xTask, char *pcTaskName)
+{
+
 }

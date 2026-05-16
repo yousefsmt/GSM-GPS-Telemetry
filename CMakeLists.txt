@@ -56,12 +56,25 @@ target_sources(${CMAKE_PROJECT_NAME} PRIVATE
 
 	#System Health
 	Common/Src/system_health.c
+
+	# FreeRTOS
+	Middlewares/ThirdParty/FreeRTOS/portable/GCC/ARM_CM3/port.c
+	Middlewares/ThirdParty/FreeRTOS/portable/MemMang/heap_4.c
+	Middlewares/ThirdParty/FreeRTOS/croutine.c
+	Middlewares/ThirdParty/FreeRTOS/event_groups.c
+	Middlewares/ThirdParty/FreeRTOS/list.c
+	Middlewares/ThirdParty/FreeRTOS/queue.c
+	Middlewares/ThirdParty/FreeRTOS/stream_buffer.c
+	Middlewares/ThirdParty/FreeRTOS/tasks.c
+	Middlewares/ThirdParty/FreeRTOS/timers.c
 )
 
 # Add include paths
 target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE
     Peripheral/Inc
 	Common/Inc
+	Middlewares/ThirdParty/FreeRTOS/include
+	Middlewares/ThirdParty/FreeRTOS/portable/GCC/ARM_CM3
 )
 
 # Add project symbols (macros)
