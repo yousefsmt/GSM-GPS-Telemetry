@@ -11,25 +11,16 @@ void rcc_init( void )
 
 	/* Turn on HSI */
 	RCC->CR |= RCC_CR_HSION;
-	while ( ( RCC->CR & RCC_CR_HSIRDY ) == 0 )
-	{
-		
-	}
+	while ( ( RCC->CR & RCC_CR_HSIRDY ) == 0 ) { }
 
 	/* Switch SYSCLK clock source to HSI */
 	RCC->CFGR &= ~RCC_CFGR_SW;
 	RCC->CFGR |= RCC_CFGR_SW_HSI;
-    while ((RCC->CFGR & RCC_CFGR_SWS) != RCC_CFGR_SWS_HSI)
-	{
-
-	}
+    while ((RCC->CFGR & RCC_CFGR_SWS) != RCC_CFGR_SWS_HSI) { }
 
 	/* Disable CSS, HSE and PLL */
 	RCC->CR &= ~( RCC_CR_CSSON | RCC_CR_HSEON | RCC_CR_PLLON );
-	while ( ( RCC->CR & ( RCC_CR_HSERDY | RCC_CR_PLLRDY ) ) != 0 )
-	{
-		/* code */
-	}
+	while ( ( RCC->CR & ( RCC_CR_HSERDY | RCC_CR_PLLRDY ) ) != 0 ) { }
 
 	/**
 	 * Disable Below Options:
@@ -64,7 +55,7 @@ void rcc_init( void )
 			break;
 		}
 	#endif /* DEBUG */
-	
+
 }
 
 #ifdef DEBUG
@@ -319,5 +310,5 @@ void rcc_init( void )
 		return apb2_clk;
 
 	}
-	
+
 #endif /* DEBUG */

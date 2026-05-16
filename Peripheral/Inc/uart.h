@@ -7,4 +7,6 @@
 	void uart2_init( const uint32_t baud_rate );
 #endif /* DEBUG */
 
+void uart1_init( const uint32_t baud_rate );
+
 #endif /* PERIPHERAL_UART_H_ */

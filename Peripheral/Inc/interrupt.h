@@ -5,9 +5,9 @@
 
 /**
  * @brief  Set priority for all interrupt handler
- * @param  none 
+ * @param  none
  * @return none.
- * 
+ *
  * This function setup NVIC vector for best interrupt handler
  */
 void interrupt_set_priorites( void );

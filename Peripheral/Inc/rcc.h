@@ -47,7 +47,7 @@
  * @brief Initialize and configure the Reset and Clock Control (RCC) peripheral
  * @param none
  * @return none
- * 
+ *
  * This function sets up the system clock
  */
 void rcc_init( void );

@@ -22,7 +22,7 @@ static void adc1_set_pll( void )
 
 	/* Set /2 ADC PLL */
 	RCC->CFGR |= RCC_CFGR_ADCPRE_DIV2;
-	
+
 	/* Enable ADC1 source clock */
 	RCC->APB2ENR |= RCC_APB2ENR_ADC1EN;
 }
@@ -85,7 +85,7 @@ static uint32_t temprature_to_adc_value( const float temp )
 	 * RM0008 Reference Manual ( DS5319 Rev 20 )
 	 * temp = ( ( VOLTAGE_25 - adc_value ) / AVERAGE_SLOPE ) + 25
 	 * now I used with reverse formula for convert Temp to adc_value
-	 * 
+	 *
 	 */
 	float voltage = ( VOLTAGE_25 - ( AVERAGE_SLOPE * ( temp - 25.0 ) ) );
 
@@ -112,7 +112,7 @@ static float adc_value_to_temprature( const uint32_t adc_value )
 	 * RM0008 Reference Manual ( DS5319 Rev 20 )
 	 * temp = ( ( VOLTAGE_25 - adc_value ) / AVERAGE_SLOPE ) + 25
 	 * now I used with reverse formula for convert Temp to adc_value
-	 * 
+	 *
 	 */
 	float temp = ( ( VOLTAGE_25 - voltage ) / AVERAGE_SLOPE ) + 25.0;
 
@@ -173,7 +173,7 @@ void ADC1_2_IRQHandler( void )
 	{
 		ADC1->SR &= ~ADC_SR_AWD;
 	}
-	
+
 	/**
 	 * Check end of conversion
 	 */

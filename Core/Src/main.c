@@ -5,12 +5,16 @@
 #include "adc.h"
 #include "timer.h"
 #include "interrupt.h"
+#include "dma.h"
 
 #define mainWAITE_STATE ( 0x00U )
 
 #ifdef DEBUG
 	#define mainBAUD_RATE   ( 115200U )
+	extern volatile uint32_t counter;
 #endif /* DEBUG */
+
+static void parse_buffer(const char* buffer, const uint32_t buffer_size );
 
 int main( void )
 {
@@ -26,9 +30,14 @@ int main( void )
 		uart2_init( mainBAUD_RATE );
 	#endif /* DEBUG */
 
+	const uint32_t buffer_size = 256U;
+	char buffer[256U] = {0};
+
+	uart1_init( 9600 );
 	tim3_init();
 	adc1_init();
 	adc1_awd_init();
+	dma_init(buffer, buffer_size);
 
 	interrupt_set_priorites();
 
@@ -62,17 +71,31 @@ int main( void )
 		( void )tim1_clk;
 		( void )timx_clk;
 		( void )mco_clk;
-		( void )iwdg_clk; 
+		( void )iwdg_clk;
 		( void )rtc_clk;
-		( void )pll_clk;  
-		( void )sys_clk;  
-		( void )usb_clk; 
-		( void )flitf_clk;  
-		( void )free_clk; 
+		( void )pll_clk;
+		( void )sys_clk;
+		( void )usb_clk;
+		( void )flitf_clk;
+		( void )free_clk;
 		( void )cortex_clk;
 	#endif /* DEBUG */
 
-	while ( 1 ) { }
+	while ( 1 )
+	{
+		if (counter == 1)
+		{
+			parse_buffer(buffer, buffer_size );
+			toggle_pin();
+		}
+	}
 
 	return 0;
+}
+
+static void parse_buffer(const char* buffer, const uint32_t buffer_size )
+{
+	uint32_t idx = buffer_size - DMA1_Channel5->CNDTR;
+
+	/* Can I parse NMEA message here???? */
 }
