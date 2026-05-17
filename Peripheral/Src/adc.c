@@ -118,6 +118,21 @@ static float adc_value_to_temprature( const uint32_t adc_value )
 
 	return temp;
 }
+
+void print_adc_temp( const uint32_t adc_value )
+{
+	float temp = adc_value_to_temprature( adc_value );
+	#if !defined( DEBUG )
+	( void )temp
+	#endif /* !DEBUG */
+	LOG( "Temp: %f\n", temp );
+}
+
+void change_htr_lte( const float htr, const float ltr)
+{
+	ADC1->HTR = temprature_to_adc_value( htr );
+	ADC1->LTR = temprature_to_adc_value( ltr );
+}
 #endif
 /*-------------------------------------------------------------------------------------------------*/
 

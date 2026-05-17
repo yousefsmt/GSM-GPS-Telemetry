@@ -16,4 +16,9 @@ void adc1_awd_init();
 
 void adc1_init( void );
 
+#if defined( DEBUG ) && defined( MONITOR_INTERNALL_TEMP )
+	void print_adc_temp( const uint32_t adc_value );
+	void change_htr_lte( const float htr, const float ltr);
+#endif /* DEBUG && MONITOR_INTERNALL_TEMP */
+
 #endif /* PERIPHERAL_ADC_H_ */
