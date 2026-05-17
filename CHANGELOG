@@ -1,0 +1,23 @@
+# Changelog
+
+All notable changes to this project will be documented in this file.
+
+This project follows the Keep a Changelog format.
+
+## [0.1.0-pre] - 2026-05-17
+
+### Added
+
+- Peripheral-specific API layer for hardware abstraction
+- Logging subsystem using USART-based `printf` output
+- System health monitoring using internal temperature sensor
+- ADC analog watchdog (AWD) support for threshold monitoring
+
+### Notes
+
+This is a bare-metal pre-release intended for hardware validation and low-level protocol testing.
+If the APIs and communication layers behave as expected, this will serve as the foundation for the first stable release.
+
+---
+
+[0.1.0-pre]: https://github.com/olivierlacan/keep-a-changelog/releases/tag/v0.0.1-pre

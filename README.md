@@ -1,241 +1,332 @@
 # STM32 RTOS-Based GPS/GSM Telemetry System
-## Step-by-Step Development Plan
 
-An embedded telemetry and monitoring system built on STM32 ARM Cortex-M using FreeRTOS. The system collects GPS location and sensor data, manages GSM communication, and performs real-time monitoring through multiple RTOS tasks. The project focuses on modular firmware architecture, embedded debugging, peripheral driver development, and reliable hardware/software integration using UART, ADC, and communication interfaces.
+A lightweight bare-metal / RTOS-ready telemetry platform based on the STM32F103 series.
+
+This project is designed for remote monitoring and telemetry applications using:
+
+- GSM/GPRS communication via SIM800L
+- GPS location and UTC time extraction via NEO-6M
+- Environmental and system monitoring
+- USART + DMA communication pipelines
+- Modular peripheral APIs for embedded development
+
+The current implementation focuses on:
+
+- Low-level driver validation
+- Communication stability
+- Hardware integration testing
+- Embedded firmware architecture
+
 ---
 
-# Phase 1 — Project Setup
+# System Architecture
 
-## Goals
-- Prepare development environment
-- Configure hardware tools
-- Create clean project structure
+```mermaid
+flowchart TD
 
-## Tasks
-- Install ARM GCC toolchain
-- Install OpenOCD
-- Configure ST-Link debugging
-- Setup Git repository
-- Create modular folder structure
+    A[Application Layer]
+    A1[Telemetry]
+    A2[Sensor Monitor]
+    A3[GPS Parser]
+    A4[SMS Handler]
 
-## Suggested Structure
+    B[Service Layer]
+    B1[Logging]
+    B2[NMEA Parser]
+    B3[Command Handler]
+    B4[DMA Services]
 
+    C[Driver/API Layer]
+    C1[GPIO]
+    C2[USART]
+    C3[ADC]
+    C4[DMA]
+    C5[TIM]
+    C6[NVIC]
+    C7[RCC]
+
+    D[Hardware Abstraction]
+    D1[CMSIS]
+    D2[STM32 Registers]
+    D3[Startup Code]
+
+    A --> B
+    B --> C
+    C --> D
+
+    A --> A1
+    A --> A2
+    A --> A3
+    A --> A4
+
+    B --> B1
+    B --> B2
+    B --> B3
+    B --> B4
+
+    C --> C1
+    C --> C2
+    C --> C3
+    C --> C4
+    C --> C5
+    C --> C6
+    C --> C7
+
+    D --> D1
+    D --> D2
+    D --> D3
+````
+
+---
+
+# Features
+
+* Bare-metal STM32F103 firmware
+* RTOS-ready software architecture
+* USART logging subsystem (`printf()` redirection)
+* SIM800L SMS communication support
+* NEO-6M GPS integration using NMEA protocol
+* ADC internal temperature monitoring
+* Analog Watchdog (AWD) support
+* DMA-based USART communication
+* Modular peripheral abstraction layer
+* Debug and Release build configurations via CMake
+
+---
+
+# Supported Hardware
+
+## Microcontroller
+
+* STM32F103C8T6
+* Blue Pill and compatible boards
+
+## GSM Module
+
+* SIM800L
+
+## GPS Module
+
+* NEO-6M
+* NMEA protocol supported
+
+---
+
+# Hardware Requirements
+
+> [!WARNING]
+> Before powering the system, verify all voltage levels, power rails, and UART connections carefully.
+
+Incorrect wiring or unstable power supplies may cause:
+
+* Hard faults
+* UART communication failures
+* Sensor malfunction
+* Permanent hardware damage
+
+## SIM800L Power Notes
+
+SIM800L requires a stable external power source due to high current peaks during GSM transmission.
+
+Recommended:
+
+* Dedicated power regulator
+* Low-ESR capacitors near the module
+* Proper grounding
+* Separate power rail from MCU when possible
+
+---
+
+# Hardware Connection Diagram
+
+```mermaid
+flowchart LR
+
+    STM32[STM32F103 Blue Pill]
+
+    GPS[NEO-6M GPS Module]
+    GSM[SIM800L GSM Module]
+    PC[USB UART Debug Terminal]
+
+    GPS -- USART1 RX/TX --> STM32
+
+    STM32 -- USART2 TX/RX --> PC
+
+    STM32 -- USART3 TX/RX --> GSM
+
+    POWER[External Power Supply]
+
+    POWER --> GSM
+    POWER --> STM32
+    POWER --> GPS
+```
+
+---
+
+# Firmware Data Flow
+
+```mermaid
+sequenceDiagram
+
+    participant GPS as NEO-6M
+    participant MCU as STM32F103
+    participant GSM as SIM800L
+    participant USER as Remote User
+
+    GPS->>MCU: NMEA Data
+    MCU->>MCU: Parse GPS Frames
+    MCU->>MCU: Process Sensor Data
+    MCU->>GSM: AT Commands
+    GSM->>USER: SMS / Telemetry Data
+```
+
+---
+
+# Software Stack
+
+## Application Layer
+
+High-level telemetry and monitoring logic:
+
+* GPS processing
+* SMS communication
+* Sensor monitoring
+* Telemetry reporting
+
+## Service Layer
+
+Reusable middleware services:
+
+* Logging subsystem
+* NMEA parser
+* Command processing
+* DMA data handling
+
+## Driver/API Layer
+
+Low-level peripheral drivers:
+
+* GPIO
+* USART
+* ADC
+* DMA
+* TIM
+* NVIC
+* RCC
+
+## Hardware Abstraction
+
+Direct CMSIS/register-level access for STM32F103 devices.
+
+---
+
+# Build Configuration
+
+The project supports multiple build configurations using CMake.
+
+## Debug Build
+
+Debug mode enables:
+
+* USART2 logging output
+* `printf()` debugging support
+* DMA testing utilities
+* Internal temperature monitoring utilities
+
+Useful for:
+
+* Hardware bring-up
+* Peripheral debugging
+* DMA validation
+* Sensor verification
+
+## Release Build
+
+Release mode:
+
+* Disables debug logging
+* Removes unnecessary debug overhead
+* Optimizes firmware size
+* Improves execution efficiency
+
+---
+
+# Compile-Time Feature Flags
+
+```cmake
+option(MONITOR_INTERNAL_TEMP "Enable internal temperature monitoring" ON)
+
+option(TEST_DMA "Enable DMA testing utilities" OFF)
+```
+
+---
+
+# Project Structure
+
+```text
 project/
-├── app/
-├── drivers/
-├── middleware/
-├── rtos/
-├── bsp/
-├── docs/
-├── tools/
-└── tests/
-
-## Deliverables
-- Working build system
-- STM32 blinking LED test
-- Git repository initialized
-
----
-
-# Phase 2 — STM32 Bare-Metal Foundation
-
-## Goals
-- Understand low-level MCU setup
-- Build reusable peripheral drivers
-
-## Tasks
-- Configure system clock
-- Configure GPIO driver
-- Configure UART driver
-- Configure timer driver
-- Configure ADC driver
-- Implement interrupt handling
-- Test UART serial communication
-
-## Important Concepts
-- Memory-mapped registers
-- NVIC interrupts
-- ARM Cortex-M architecture
-- Register-level programming
-
-## Deliverables
-- Reusable drivers
-- UART debug output
-- Clean driver APIs
+├── Core/
+│   ├── Inc/
+│   └── Src/
+│
+├── Drivers/
+│   ├── GPIO/
+│   ├── USART/
+│   ├── DMA/
+│   ├── ADC/
+│   └── RCC/
+│
+├── Services/
+│   ├── Logging/
+│   ├── NMEA/
+│   └── Command/
+│
+├── Application/
+│   ├── GPS/
+│   ├── GSM/
+│   └── Telemetry/
+│
+├── cmake/
+├── CMakeLists.txt
+└── README.md
+```
 
 ---
 
-# Phase 3 — FreeRTOS Integration
+# Development Goals
 
-## Goals
-- Build multitasking architecture
-- Learn RTOS synchronization
-
-## Tasks
-- Integrate FreeRTOS
-- Create basic tasks
-- Configure scheduler
-- Implement queues
-- Implement mutexes
-- Add software timers
-- Add task monitoring
-
-## Suggested Tasks
-- Sensor Task
-- GPS Task
-- GSM Task
-- Logger Task
-- Supervisor Task
-
-## Deliverables
-- Stable multitasking firmware
-- RTOS task communication
-- System monitoring logs
+* Build a reusable embedded telemetry framework
+* Improve low-level STM32 driver development skills
+* Validate DMA-based communication pipelines
+* Create a scalable RTOS-ready architecture
+* Develop reliable GSM/GPS communication systems
 
 ---
 
-# Phase 4 — GPS Module Integration
+# Future Improvements
 
-## Goals
-- Receive and parse GPS data
-
-## Tasks
-- Connect NEO-6M GPS module
-- Receive NMEA messages through UART
-- Implement UART ring buffer
-- Parse latitude/longitude data
-- Validate GPS checksum
-- Handle GPS signal loss
-
-## Deliverables
-- Real-time GPS coordinates
-- Parsed NMEA data
-- GPS status monitoring
+* FreeRTOS integration
+* TCP/IP over GPRS
+* MQTT telemetry support
+* OTA firmware update support
+* SD card logging
+* Sensor expansion support
+* Power optimization modes
+* Watchdog recovery system
 
 ---
 
-# Phase 5 — GSM Module Integration
+# Recommended Toolchain
 
-## Goals
-- Build GSM communication layer
-
-## Tasks
-- Connect SIM800L GSM module
-- Implement AT command interface
-- Send SMS or telemetry packets
-- Handle communication timeout
-- Implement reconnect logic
-- Add communication status handling
-
-## Deliverables
-- Reliable GSM communication
-- AT command parser
-- Telemetry transmission
+* GCC ARM Embedded Toolchain
+* CMake
+* OpenOCD
+* ST-Link
+* CMSIS
+* STM32F1 device headers
 
 ---
 
-# Phase 6 — Sensor Monitoring
+# License
 
-## Goals
-- Read and process sensor data
-
-## Tasks
-- Read ADC values
-- Integrate temperature/humidity sensor
-- Filter noisy signals
-- Implement periodic sampling
-- Add threshold monitoring
-
-## Deliverables
-- Sensor acquisition system
-- Real-time measurements
-- Monitoring logs
-
----
-
-# Phase 7 — Debugging & Reliability
-
-## Goals
-- Improve firmware stability
-- Practice embedded debugging
-
-## Tasks
-- Use oscilloscope for UART verification
-- Analyze signals using logic analyzer
-- Add watchdog timer
-- Add error handling
-- Add timeout protection
-- Add fault recovery mechanisms
-
-## Deliverables
-- Stable firmware
-- Hardware debugging experience
-- Reliability improvements
-
----
-
-# Phase 8 — Documentation
-
-## Goals
-- Make project professional
-
-## Tasks
-- Create README.md
-- Draw architecture diagram
-- Document RTOS tasks
-- Document communication flow
-- Add setup instructions
-- Add pin mapping
-
-## Deliverables
-- Professional GitHub repository
-- Clean project documentation
-
----
-
-# Optional Advanced Features
-
-## Intermediate Features
-- DMA-based UART
-- Circular buffer
-- Event groups
-- Low-power mode
-- EEPROM/Flash storage
-
-## Advanced Features
-- UART bootloader
-- Firmware update mechanism
-- CRC validation
-- MQTT communication
-- Linux monitoring tool
-- CMake-based build system
-
----
-
-# Recommended Learning Topics During Project
-
-- ARM Cortex-M internals
-- FreeRTOS scheduling
-- UART/DMA communication
-- Embedded debugging
-- Memory management
-- Embedded software architecture
-- Modular firmware design
-- Watchdog systems
-- Fault handling
-- Communication protocols
-
----
-
-# Final Goal
-
-Build a production-style embedded system that demonstrates:
-
-- Embedded C development
-- RTOS architecture
-- Peripheral driver development
-- Hardware/software debugging
-- Communication protocols
-- System reliability
-- Firmware modularity
-- Real engineering workflow
+This project is intended for educational, research, and embedded systems development purposes.
