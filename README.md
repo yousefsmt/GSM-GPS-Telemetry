@@ -261,38 +261,6 @@ option(TEST_DMA "Enable DMA testing utilities" OFF)
 
 ---
 
-# Project Structure
-
-```text
-project/
-├── Core/
-│   ├── Inc/
-│   └── Src/
-│
-├── Drivers/
-│   ├── GPIO/
-│   ├── USART/
-│   ├── DMA/
-│   ├── ADC/
-│   └── RCC/
-│
-├── Services/
-│   ├── Logging/
-│   ├── NMEA/
-│   └── Command/
-│
-├── Application/
-│   ├── GPS/
-│   ├── GSM/
-│   └── Telemetry/
-│
-├── cmake/
-├── CMakeLists.txt
-└── README.md
-```
-
----
-
 # Development Goals
 
 * Build a reusable embedded telemetry framework
