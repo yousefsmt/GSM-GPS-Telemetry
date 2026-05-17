@@ -12,6 +12,8 @@ set(CMAKE_C_STANDARD 11)
 set(CMAKE_C_STANDARD_REQUIRED ON)
 set(CMAKE_C_EXTENSIONS ON)
 
+option(MONITOR_INTERNALL_TEMP "Enable internal temp monitoring" OFF)
+option(TEST_DMA               "Enable DMA test mode"            OFF)
 
 # Define the build type
 if(NOT CMAKE_BUILD_TYPE)
@@ -52,7 +54,9 @@ target_sources(${CMAKE_PROJECT_NAME} PRIVATE
 	Peripheral/Src/timer.c
 	Peripheral/Src/uart.c
 	Peripheral/Src/flash.c
-	Peripheral/Src/dma.c
+
+	# Debug Version
+	$<$<CONFIG:Debug>:Peripheral/Src/dma.c>
 
 	#System Health
 	Common/Src/system_health.c
@@ -64,9 +68,9 @@ target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE
 	Common/Inc
 )
 
-# Add project symbols (macros)
 target_compile_definitions(${CMAKE_PROJECT_NAME} PRIVATE
-    # Add user defined symbols
+    $<$<BOOL:${MONITOR_INTERNALL_TEMP}>:MONITOR_INTERNALL_TEMP>
+    $<$<BOOL:${TEST_DMA}>:TEST_DMA>
 )
 
 # Remove wrong libob.a library dependency when using cpp files

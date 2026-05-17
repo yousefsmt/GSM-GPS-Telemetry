@@ -9,4 +9,6 @@
 
 void uart1_init( const uint32_t baud_rate );
 
+void uart3_init( const uint32_t baud_rate );
+
 #endif /* PERIPHERAL_UART_H_ */

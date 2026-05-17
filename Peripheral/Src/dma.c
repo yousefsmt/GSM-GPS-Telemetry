@@ -1,6 +1,5 @@
 #include "dma.h"
 
-
 /**
  * NOTE: After ISR must be set 1 to IFCR each interrupt register (TEI, HTI, TCI)
  */
@@ -45,11 +44,11 @@ void DMA1_Channel5_IRQHandler( void )
 		DMA1->IFCR |= DMA_IFCR_CTEIF5;
 	}
 
-	/* Transfer complete */
-	if( ( DMA1->ISR & DMA_ISR_TCIF5 ) )
-	{
-		DMA1->IFCR |= DMA_IFCR_CTCIF5;
-	}
+	/* Transfer complete ( Don't need for circular mode )*/
+	// if( ( DMA1->ISR & DMA_ISR_TCIF5 ) )
+	// {
+	// 	DMA1->IFCR |= DMA_IFCR_CTCIF5;
+	// }
 
 	/* Half of the bytes transfer */
 	if( ( DMA1->ISR & DMA_ISR_HTIF5 ) )
