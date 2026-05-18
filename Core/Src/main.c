@@ -1,171 +1,46 @@
-#include "FreeRTOS.h"
-#include "FreeRTOSTasks.h"
+/**
+ * This example uses direct processing function
+ * to process dummy NMEA data from GPS receiver
+ */
+#include <string.h>
+#include <stdio.h>
+#include "lwgps/lwgps.h"
 
-#include "rcc.h"
-#include "flash.h"
-#include "gpio.h"
-#include "uart.h"
-#include "adc.h"
-#include "timer.h"
-#include "interrupt.h"
-#include "dma.h"
-#include "ring_buffer.h"
-
-/*--------------------------------------------------*/
-#define RING_BUFFER_USART1_SIZE ( 128 )
-volatile char rb_buf[ RING_BUFFER_USART1_SIZE + 1 ];
-RingBuffer_t ring_buffer_usart1 = {
-  len: RING_BUFFER_USART1_SIZE,
-  buf: rb_buf,
-  pos: 0,
-  ext: 0
-};
-volatile int newline_usart1 = 0;
-
-/*--------------------------------------------------*/
-#define RING_BUFFER_USART3_SIZE ( 128 )
-volatile char rb_buf[ RING_BUFFER_USART3_SIZE + 1 ];
-RingBuffer_t ring_buffer_usart3 = {
-  len: RING_BUFFER_USART3_SIZE,
-  buf: rb_buf,
-  pos: 0,
-  ext: 0
-};
-volatile int newline_usart3 = 0;
-/*--------------------------------------------------*/
-
-#define USART1_BAUD_RATE   ( 9600U )
-#define USART3_BAUD_RATE   ( 9600U )
-
-#define FLASH_WAITE_STATE ( 0x00U )
-
-#ifdef DEBUG
-	#define USART2_BAUD_RATE   ( 115200U )
-#endif /* DEBUG */
-
-int main( void )
-{
-	flash_set_latency( FLASH_WAITE_STATE );
-
-	rcc_init();
-
-	SystemCoreClockUpdate();
-
-	gpio_init();
-
-	#ifdef DEBUG
-		uart2_init( USART2_BAUD_RATE );
-	#endif /* DEBUG */
-
-	uart1_init( USART1_BAUD_RATE );
-	uart3_init( USART3_BAUD_RATE );
-	tim3_init();
-	adc1_init();
-	adc1_awd_init();
-
-	#if defined( DEBUG ) && defined( TEST_DMA )
-		const uint32_t buffer_size = 256U;
-		char buffer[256U] = {0};
-		dma_init(buffer, buffer_size);
-	#endif /* DEBUG && TEST_DMA */
-
-	interrupt_set_priorites();
-
-	#ifdef DEBUG
-		uint32_t ahb_clk  = get_ahb_clock();
-		uint32_t apb1_clk = get_apb1_clock();
-		uint32_t apb2_clk = get_apb2_clock();
-
-		uint32_t adc_clk = get_adc_clock( apb2_clk );
-		uint32_t tim1_clk = get_tim1_clock( apb1_clk );
-		uint32_t timx_clk = get_timx_clock( TIM2, apb1_clk );
-
-		uint32_t mco_clk    = get_mco_clock();
-		uint32_t iwdg_clk   = get_iwdg_clock();
-		uint32_t rtc_clk    = get_rtc_clock();
-		uint32_t pll_clk    = get_pll_clock();
-		uint32_t sys_clk    = get_sys_clock();
-		uint32_t usb_clk    = get_usb_clock();
-		uint32_t flitf_clk  = get_flitf_clock();
-		uint32_t free_clk   = get_free_clock();
-		uint32_t cortex_clk = get_cortex_clock();
-
-		/**
-		 * Remove debug variable for increase stack size
-		 * if you want check param please set breakpoint after "get_cortex_clock" call
-		 */
-		( void )ahb_clk;
-		( void )apb1_clk;
-		( void )apb2_clk;
-		( void )adc_clk;
-		( void )tim1_clk;
-		( void )timx_clk;
-		( void )mco_clk;
-		( void )iwdg_clk;
-		( void )rtc_clk;
-		( void )pll_clk;
-		( void )sys_clk;
-		( void )usb_clk;
-		( void )flitf_clk;
-		( void )free_clk;
-		( void )cortex_clk;
-	#endif /* DEBUG */
-
-	vTaskStartScheduler();
-
-	while ( 1 ) { }
-
-	return 0;
-}
+/* GPS handle */
+lwgps_t hgps;
 
 /**
- * Set ISR for NEO-6M receive message
+ * \brief           Dummy data from GPS receiver
  */
-void USART1_IRQHandler( void )
-{
-    if ( USART1->SR & USART_SR_RXNE )
-    {
-		uint8_t data = USART1->DR;
-		ringbuf_write( ring_buffer_usart1, data );
-		if ( data == '\r' ) { newline_usart1 = 1; }
-    }
+const char gps_rx_data[] = ""
+                           "$GPRMC,183729,A,3907.356,N,12102.482,W,000.0,360.0,080301,015.5,E*6F\r\n"
+                           "$GPRMB,A,,,,,,,,,,,,V*71\r\n"
+                           "$GPGGA,183730,3907.356,N,12102.482,W,1,05,1.6,646.4,M,-24.1,M,,*75\r\n"
+                           "$GPGSA,A,3,02,,,07,,09,24,26,,,,,1.6,1.6,1.0*3D\r\n"
+                           "$GPGSV,2,1,08,02,43,088,38,04,42,145,00,05,11,291,00,07,60,043,35*71\r\n"
+                           "$GPGSV,2,2,08,08,02,145,00,09,46,303,47,24,16,178,32,26,18,231,43*77\r\n"
+                           "$PGRME,22.0,M,52.9,M,51.0,M*14\r\n"
+                           "$GPGLL,3907.360,N,12102.481,W,183730,A*33\r\n"
+                           "$PGRMZ,2062,f,3*2D\r\n"
+                           "$PGRMM,WGS84*06\r\n"
+                           "$GPBOD,,T,,M,,*47\r\n"
+                           "$GPRTE,1,1,c,0*07\r\n"
+                           "$GPRMC,183731,A,3907.482,N,12102.436,W,000.0,360.0,080301,015.5,E*67\r\n"
+                           "$GPRMB,A,,,,,,,,,,,,V*71\r\n";
 
-	if ( ( USART1->SR & USART_SR_IDLE ) ) { }
-}
+int
+main() {
+    /* Init GPS */
+    lwgps_init(&hgps);
 
-/**
- * Set ISR for transmit and receive AT command to SIM800L
- */
-void USART3_IRQHandler( void )
-{
-    if ( USART1->SR & USART_SR_RXNE )
-    {
-        uint8_t data = USART1->DR;
-		ringbuf_write( ring_buffer_usart3, data );
-		if ( data == '\r' ) { newline_usart3 = 1; }
-    }
+    /* Process all input data */
+    lwgps_process(&hgps, gps_rx_data, strlen(gps_rx_data));
 
-	if ( ( USART1->SR & USART_SR_IDLE ) ) { }
+    /* Print messages */
+    printf("Valid status: %d\r\n", hgps.is_valid);
+    printf("Latitude: %f degrees\r\n", hgps.latitude);
+    printf("Longitude: %f degrees\r\n", hgps.longitude);
+    printf("Altitude: %f meters\r\n", hgps.altitude);
 
-	if ( ( USART1->SR & USART_SR_TXE ) ) { }
-
-	if ( ( USART1->SR & USART_SR_TC ) ) { }
-}
-
-#ifdef DEBUG
-	/**
-	 * Implement putchar for printf syscall
-	 * to send character instead standard I/O Linux to usart2
-	 */
-	int __io_putchar( int ch )
-	{
-		while ( ( USART2->SR & USART_SR_TXE ) == 0 ) { }
-		USART2->DR = ch;
-		return ch;
-	}
-#endif /* DEBUG */
-
-void vApplicationStackOverflowHook( TaskHandle_t xTask, char *pcTaskName)
-{
-
+    return 0;
 }
