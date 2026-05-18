@@ -1,15 +1,10 @@
-#include "FreeRTOS.h"
-#include "FreeRTOSTasks.h"
-
-#include "rcc.h"
-#include "flash.h"
-#include "gpio.h"
-#include "uart.h"
-#include "adc.h"
-#include "timer.h"
-#include "interrupt.h"
-#include "dma.h"
-#include "ring_buffer.h"
+/**
+ * This example uses direct processing function
+ * to process dummy NMEA data from GPS receiver
+ */
+#include <string.h>
+#include <stdio.h>
+#include "lwgps/lwgps.h"
 
 /*--------------------------------------------------*/
 #define RING_BUFFER_USART1_SIZE ( 128 )
