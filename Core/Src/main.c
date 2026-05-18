@@ -9,19 +9,43 @@
 #include "timer.h"
 #include "interrupt.h"
 #include "dma.h"
+#include "ring_buffer.h"
 
-#define mainWAITE_STATE ( 0x00U )
+/*--------------------------------------------------*/
+#define RING_BUFFER_USART1_SIZE ( 128 )
+volatile char rb_buf[ RING_BUFFER_USART1_SIZE + 1 ];
+RingBuffer_t ring_buffer_usart1 = {
+  len: RING_BUFFER_USART1_SIZE,
+  buf: rb_buf,
+  pos: 0,
+  ext: 0
+};
+volatile int newline_usart1 = 0;
+
+/*--------------------------------------------------*/
+#define RING_BUFFER_USART3_SIZE ( 128 )
+volatile char rb_buf[ RING_BUFFER_USART3_SIZE + 1 ];
+RingBuffer_t ring_buffer_usart3 = {
+  len: RING_BUFFER_USART3_SIZE,
+  buf: rb_buf,
+  pos: 0,
+  ext: 0
+};
+volatile int newline_usart3 = 0;
+/*--------------------------------------------------*/
+
+#define USART1_BAUD_RATE   ( 9600U )
+#define USART3_BAUD_RATE   ( 9600U )
+
+#define FLASH_WAITE_STATE ( 0x00U )
 
 #ifdef DEBUG
-	#define mainBAUD_RATE   ( 115200U )
-	extern volatile uint32_t counter;
+	#define USART2_BAUD_RATE   ( 115200U )
 #endif /* DEBUG */
-
-static void parse_buffer(const char* buffer, const uint32_t buffer_size );
 
 int main( void )
 {
-	flash_set_latency( mainWAITE_STATE );
+	flash_set_latency( FLASH_WAITE_STATE );
 
 	rcc_init();
 
@@ -30,17 +54,20 @@ int main( void )
 	gpio_init();
 
 	#ifdef DEBUG
-		uart2_init( mainBAUD_RATE );
+		uart2_init( USART2_BAUD_RATE );
 	#endif /* DEBUG */
 
-	const uint32_t buffer_size = 256U;
-	char buffer[256U] = {0};
-
-	uart1_init( 9600 );
+	uart1_init( USART1_BAUD_RATE );
+	uart3_init( USART3_BAUD_RATE );
 	tim3_init();
 	adc1_init();
 	adc1_awd_init();
-	dma_init(buffer, buffer_size);
+
+	#if defined( DEBUG ) && defined( TEST_DMA )
+		const uint32_t buffer_size = 256U;
+		char buffer[256U] = {0};
+		dma_init(buffer, buffer_size);
+	#endif /* DEBUG && TEST_DMA */
 
 	interrupt_set_priorites();
 
@@ -84,20 +111,57 @@ int main( void )
 		( void )cortex_clk;
 	#endif /* DEBUG */
 
-	while ( 1 )
-	{
-		if (counter == 1)
-		{
-			parse_buffer(buffer, buffer_size );
-			toggle_pin();
-		}
-	}
+	while ( 1 ) { }
 
 	return 0;
 }
 
-static void parse_buffer(const char* buffer, const uint32_t buffer_size )
+/**
+ * Set ISR for NEO-6M receive message
+ */
+void USART1_IRQHandler( void )
 {
+    if ( USART1->SR & USART_SR_RXNE )
+    {
+		uint8_t data = USART1->DR;
+		ringbuf_write( ring_buffer_usart1, data );
+		if ( data == '\r' ) { newline_usart1 = 1; }
+    }
+
+	if ( ( USART1->SR & USART_SR_IDLE ) ) { }
+}
+
+/**
+ * Set ISR for transmit and receive AT command to SIM800L
+ */
+void USART3_IRQHandler( void )
+{
+    if ( USART1->SR & USART_SR_RXNE )
+    {
+        uint8_t data = USART1->DR;
+		ringbuf_write( ring_buffer_usart3, data );
+		if ( data == '\r' ) { newline_usart3 = 1; }
+    }
+
+	if ( ( USART1->SR & USART_SR_IDLE ) ) { }
+
+	if ( ( USART1->SR & USART_SR_TXE ) ) { }
+
+	if ( ( USART1->SR & USART_SR_TC ) ) { }
+}
+
+#ifdef DEBUG
+	/**
+	 * Implement putchar for printf syscall
+	 * to send character instead standard I/O Linux to usart2
+	 */
+	int __io_putchar( int ch )
+	{
+		while ( ( USART2->SR & USART_SR_TXE ) == 0 ) { }
+		USART2->DR = ch;
+		return ch;
+	}
+#endif /* DEBUG */
 	uint32_t idx = buffer_size - DMA1_Channel5->CNDTR;
 
 	/* Can I parse NMEA message here???? */

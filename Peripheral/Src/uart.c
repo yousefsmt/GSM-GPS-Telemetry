@@ -14,7 +14,8 @@
 		 * 1: Enable USART2 Clock
 		 * 2: Enable GPIOA clock ( GPIO_Init() )
 		 * 3: Set Alternative function output push-pull on CRL
-		 * 4:
+		 * 4: Set baud rate
+		 * 5: Enable transmission
 		 */
 
 		uint32_t usartdiv = ( SystemCoreClock / baud_rate );
@@ -35,17 +36,6 @@
 		/* Enable transmission */
 		USART2->CR1 |= USART_CR1_TE;
 	}
-
-	/**
-	 * Implement putchar for printf syscall
-	 * to send character instead standard I/O Linux to usart2
-	 */
-	int __io_putchar( int ch )
-	{
-		while ( ( USART2->SR & USART_SR_TXE ) == 0 ) {}
-		USART2->DR = ch;
-		return ch;
-	}
 #endif /* DEBUG */
 
 /**
@@ -57,7 +47,13 @@ void uart1_init( const uint32_t baud_rate )
 	 * neo-6m communication
 	 * 1: Enable USART1 Clock
 	 * 2: Enable GPIOA Pin 10 input floating
+	 * 4: Set baud rate
+	 * 5: Enable receiver
+	 *
 	 * TEST: For debug release must check DMA USAT1->DR to USART2->DR for transmit NMEA data to printf
+	 * TEST: Test-1 parse message with DMA
+	 * TEST: Test-2 parse message with ring buffer on stack
+	 *
 	 * TODO: After add RTOS, send NMEA parsed data via SIM800L SMS.
 	 */
 	uint32_t usartdiv = ( SystemCoreClock / baud_rate );
@@ -75,7 +71,16 @@ void uart1_init( const uint32_t baud_rate )
 
 	USART1->CR1 &= ~( USART_CR1_M );
 	USART1->CR2 &= ~( USART_CR2_STOP );
-	USART1->CR3 |= USART_CR3_DMAR;
+
+	/**
+	 * *** TEST-1 ***
+	 * I want compare two methods for USART receive message, which one faster? which one efficient?
+	 * 1: In ISR check IDEAL line then store 8 bit to circular buffer with DMA.
+	 * 2: In ISR check IDEAL line then store 8 bit to implemented ring buffer in Common directory then parse it on main
+	 */
+	#ifdef TEST_DMA
+		USART1->CR3 |= USART_CR3_DMAR;
+	#endif /* TEST_DMA */
 
 	/* Set manually baud rate */
 	USART1->BRR = ( ( ( usartdiv / 16 ) << USART_BRR_DIV_Mantissa_Pos ) |
@@ -90,22 +95,53 @@ void uart1_init( const uint32_t baud_rate )
 
 	USART1->CR1 |= USART_CR1_UE;
 }
-uint32_t counter = 0x00;
-void USART1_IRQHandler( void )
+
+/**
+ * Implement UART3 for SIM800L
+ */
+void uart3_init( const uint32_t baud_rate )
 {
-    if ( USART1->SR & USART_SR_RXNE )
-    {
-        uint8_t data = USART1->DR;
+	/**
+	 * SIM800L communication
+	 * 1: Enable USART3 Clock
+	 * 2: Enable GPIOA Pin 11 input floating
+	 * 3: Enable GPIOA Pin 10 alternate function push-pull
+	 * TEST: For debug release must check DMA USART3->DR to USART3->DR for transmit and receive AT commands
+	 * TODO: After add RTOS, send NMEA parsed data via SIM800L SMS.
+	 */
+	uint32_t usartdiv = ( SystemCoreClock / baud_rate );
 
-		( void )data;
-    }
+	/* Enable USART3 clock */
+	RCC->APB1ENR |= RCC_APB1ENR_USART3EN;
 
-	if ( ( USART1->SR & USART_SR_IDLE ) )
-	{
-		counter = 0x01U;
-	}
-	else
-	{
-		counter = 0x00U;
-	}
+	/* Clear CNF & MODE bits PA10 */
+	GPIOB->CRH &= ~( GPIO_CRH_CNF10 | GPIO_CRH_MODE10 |
+	                 GPIO_CRH_CNF11 | GPIO_CRH_MODE11  );
+
+	/* Set PB11 to input floating */
+	GPIOB->CRH |= ( 0x01 << GPIO_CRH_CNF11_Pos );
+
+	/* Set PB10 to alternate function push-pull */
+	GPIOB->CRH |= ( ( 0x01 << GPIO_CRH_MODE10_Pos ) | ( 0x02 << GPIO_CRH_CNF10_Pos ) );
+
+	USART3->CR1 = 0x00U;
+
+	USART3->CR1 &= ~( USART_CR1_M );
+	USART3->CR2 &= ~( USART_CR2_STOP );
+
+	#ifdef TEST_DMA
+		USART3->CR3 |= USART_CR3_DMAR;
+	#endif /* TEST_DMA */
+
+	/* Set manually baud rate */
+	USART3->BRR = ( ( ( usartdiv / 16 ) << USART_BRR_DIV_Mantissa_Pos ) |
+				    ( ( usartdiv % 16 ) << USART_BRR_DIV_Fraction_Pos ) );
+
+	USART3->CR1 |= USART_CR1_RE;
+
+	/* Interrupt enable */
+	USART3->CR1 |= ( USART_CR1_RXNEIE | USART_CR1_IDLEIE | USART_CR1_TXEIE | USART_CR1_TCIE);
+
+	USART3->CR1 |= ( USART_CR1_UE | USART_CR1_TE );
+
 }
