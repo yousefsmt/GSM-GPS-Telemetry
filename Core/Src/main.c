@@ -111,6 +111,8 @@ int main( void )
 		( void )cortex_clk;
 	#endif /* DEBUG */
 
+	vTaskStartScheduler();
+
 	while ( 1 ) { }
 
 	return 0;
@@ -162,10 +164,6 @@ void USART3_IRQHandler( void )
 		return ch;
 	}
 #endif /* DEBUG */
-	uint32_t idx = buffer_size - DMA1_Channel5->CNDTR;
-
-	/* Can I parse NMEA message here???? */
-}
 
 void vApplicationStackOverflowHook( TaskHandle_t xTask, char *pcTaskName)
 {

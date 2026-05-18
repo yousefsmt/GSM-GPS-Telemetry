@@ -71,6 +71,7 @@ target_sources(${CMAKE_PROJECT_NAME} PRIVATE
 	Middlewares/ThirdParty/FreeRTOS/stream_buffer.c
 	Middlewares/ThirdParty/FreeRTOS/tasks.c
 	Middlewares/ThirdParty/FreeRTOS/timers.c
+	Middlewares/ThirdParty/lwgps/src/lwgps/lwgps.c
 )
 
 # Add include paths
@@ -79,6 +80,7 @@ target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE
 	Common/Inc
 	Middlewares/ThirdParty/FreeRTOS/include
 	Middlewares/ThirdParty/FreeRTOS/portable/GCC/ARM_CM3
+	Middlewares/ThirdParty/lwgps/src/include
 )
 
 target_compile_definitions(${CMAKE_PROJECT_NAME} PRIVATE
