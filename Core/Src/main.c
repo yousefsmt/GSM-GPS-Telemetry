@@ -1,33 +1,12 @@
-/**
- * This example uses direct processing function
- * to process dummy NMEA data from GPS receiver
- */
-#include <string.h>
-#include <stdio.h>
-#include "lwgps/lwgps.h"
-
-/*--------------------------------------------------*/
-#define RING_BUFFER_USART1_SIZE ( 128 )
-volatile char rb_buf[ RING_BUFFER_USART1_SIZE + 1 ];
-RingBuffer_t ring_buffer_usart1 = {
-  len: RING_BUFFER_USART1_SIZE,
-  buf: rb_buf,
-  pos: 0,
-  ext: 0
-};
-volatile int newline_usart1 = 0;
-
-/*--------------------------------------------------*/
-#define RING_BUFFER_USART3_SIZE ( 128 )
-volatile char rb_buf[ RING_BUFFER_USART3_SIZE + 1 ];
-RingBuffer_t ring_buffer_usart3 = {
-  len: RING_BUFFER_USART3_SIZE,
-  buf: rb_buf,
-  pos: 0,
-  ext: 0
-};
-volatile int newline_usart3 = 0;
-/*--------------------------------------------------*/
+#include "FreeRTOSTasks.h"
+#include "rcc.h"
+#include "flash.h"
+#include "gpio.h"
+#include "uart.h"
+#include "adc.h"
+#include "timer.h"
+#include "interrupt.h"
+#include "dma.h"
 
 #define USART1_BAUD_RATE   ( 9600U )
 #define USART3_BAUD_RATE   ( 9600U )

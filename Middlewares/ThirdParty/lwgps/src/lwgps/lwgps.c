@@ -74,12 +74,12 @@
  * \param[in]       ghandle: GPS handle
  * \param[in]       text: Text to parse. Set to `NULL` to parse current GPS term
  * \return          Parsed integer
- * 
+ *
  * \note            \ref result from this function is never used in the library
  *                  to perform array access or even allocate any memory.
  *                  Some reports have been triggered about *CWE-190*,
  *                  which does not have negative effects in this particular use case.
- * 
+ *
  *                  Security attacks with invalid input data may trigger 
  *                  overflow in the number, which will later be used wrongly in the application,
  *                  but never inside the library itself.
@@ -106,12 +106,12 @@ prv_parse_number(lwgps_t* ghandle, const char* text) {
  * \param[in]       ghandle: GPS handle
  * \param[in]       text: Text to parse. Set to `NULL` to parse current GPS term
  * \return          Parsed double in \ref lwgps_float_t format
- * 
+ *
  * \note            \ref result from this function is never used in the library
  *                  to perform array access or even allocate any memory.
  *                  Some reports have been triggered about *CWE-190*,
  *                  which does not have negative effects in this particular use case.
- * 
+ *
  *                  Security attacks with invalid input data may trigger 
  *                  overflow in the number, which will later be used wrongly in the application,
  *                  but never inside the library itself.
@@ -173,27 +173,23 @@ prv_parse_term(lwgps_t* ghandle) {
     if (ghandle->p.term_num == 0) { /* Check string type */
         if (0) {
 #if LWGPS_CFG_STATEMENT_GPGGA
-        } else if (ghandle->p.term_str[0] == '$'
-                   && (ghandle->p.term_str[1] == 'G' || ghandle->p.term_str[1] == 'B')
-                   && !strncmp(&ghandle->p.term_str[3], "GGA", 3)) {
+        } else if (ghandle->p.term_str[0] == '$' && ghandle->p.term_str[1] == 'G'
+                   && !strncmp(ghandle->p.term_str + 3, "GGA", 3)) {
             ghandle->p.stat = STAT_GGA;
 #endif /* LWGPS_CFG_STATEMENT_GPGGA */
 #if LWGPS_CFG_STATEMENT_GPGSA
-        } else if (ghandle->p.term_str[0] == '$'
-                   && (ghandle->p.term_str[1] == 'G' || ghandle->p.term_str[1] == 'B')
-                   && !strncmp(&ghandle->p.term_str[3], "GSA", 3)) {
+        } else if (ghandle->p.term_str[0] == '$' && ghandle->p.term_str[1] == 'G'
+                   && !strncmp(ghandle->p.term_str + 3, "GSA", 3)) {
             ghandle->p.stat = STAT_GSA;
 #endif /* LWGPS_CFG_STATEMENT_GPGSA */
 #if LWGPS_CFG_STATEMENT_GPGSV
-        } else if (ghandle->p.term_str[0] == '$'
-                   && (ghandle->p.term_str[1] == 'G' || ghandle->p.term_str[1] == 'B')
-                   && !strncmp(&ghandle->p.term_str[3], "GSV", 3)) {
+        } else if (ghandle->p.term_str[0] == '$' && ghandle->p.term_str[1] == 'G'
+                   && !strncmp(ghandle->p.term_str + 3, "GSV", 3)) {
             ghandle->p.stat = STAT_GSV;
 #endif /* LWGPS_CFG_STATEMENT_GPGSV */
 #if LWGPS_CFG_STATEMENT_GPRMC
-        } else if (ghandle->p.term_str[0] == '$'
-                   && (ghandle->p.term_str[1] == 'G' || ghandle->p.term_str[1] == 'B')
-                   && !strncmp(&ghandle->p.term_str[3], "RMC", 3)) {
+        } else if (ghandle->p.term_str[0] == '$' && ghandle->p.term_str[1] == 'G'
+                   && !strncmp(ghandle->p.term_str + 3, "RMC", 3)) {
             ghandle->p.stat = STAT_RMC;
 #endif /* LWGPS_CFG_STATEMENT_GPRMC */
 #if LWGPS_CFG_STATEMENT_PUBX

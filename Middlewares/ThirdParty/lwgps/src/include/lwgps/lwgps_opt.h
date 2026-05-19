@@ -198,7 +198,7 @@ extern "C" {
 
 /**
  * \brief           Memory copy function
- * 
+ *
  * \note            Function footprint is the same as \ref memcpy
  */
 #ifndef LWGPS_MEMCPY

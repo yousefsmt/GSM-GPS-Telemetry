@@ -61,8 +61,8 @@ class Lwgps {
 #if LWGPS_CFG_STATUS || __DOXYGEN__
     /**
      * \brief           Set processing callback function
-     * 
-     * \param           procfn 
+     *
+     * \param           procfn
      */
     void
     set_process_fn(lwgps_process_fn procfn) {
