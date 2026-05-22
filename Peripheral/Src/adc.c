@@ -125,7 +125,7 @@ void print_adc_temp( const uint32_t adc_value )
 	#if !defined( DEBUG )
 	( void )temp
 	#endif /* !DEBUG */
-	LOG( "Temp: %f\n", temp );
+	// LOG( "Temp: %f\n", temp );
 }
 
 void change_htr_lte( const float htr, const float ltr)
@@ -168,33 +168,4 @@ void adc1_awd_init()
 
 	// Enable Analog watchdog interrupts
 	ADC1->CR1 |= (ADC_CR1_AWDIE);
-}
-
-
-/**
- * When interrupt occur this function check why happend?
- */
-void ADC1_2_IRQHandler( void )
-{
-	/**
-	 * TODO: Check AWD occur
-	 * TODO: Check End Of Conversion
-	 */
-
-	/**
-	 * Check AWD occur break high or low threshold
-	 */
-	if (ADC1->SR & ADC_SR_AWD)
-	{
-		ADC1->SR &= ~ADC_SR_AWD;
-	}
-
-	/**
-	 * Check end of conversion
-	 */
-	if (ADC1->SR & ADC_SR_EOC)
-	{
-		/* Clear EOC flag */
-		ADC1->SR &= ~ADC_SR_EOC;
-	}
 }

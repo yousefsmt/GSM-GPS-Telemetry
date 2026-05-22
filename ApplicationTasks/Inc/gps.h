@@ -6,14 +6,16 @@
 #include "FreeRTOSTasks.h"
 #include "mcu.h"
 
-#define GPS_BUFFER_SIZE ( 128 )
+#define ISR_RING_BUFFER_SIZE ( 128 )
+#define TAIL_BUFFER_SIZE     ( 6 )
+#define ASCII_TABLE_SIZE     ( 16 )
 
-typedef struct
-{
-	uint8_t  buffer[GPS_BUFFER_SIZE];
-    uint32_t buffer_idx;
-    uint32_t collecting;
-}GpsBuffer_t;
+#define NMEA_MESSAGE_LENGTH  ( 85 )
+#define QUEUE_NMEA_LENGTH    ( 10 )
+#define TAIL_CHECKSUM        ( 0x56 )
+
+#define MSB_MASK ( 0xf0 )
+#define LSB_MASK ( 0x0f )
 
 void vGpsStartupTask( void );
 

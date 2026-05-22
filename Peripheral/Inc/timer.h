@@ -4,7 +4,7 @@
 #include "mcu.h"
 
 /**
- * TODO: Implement TIM3 for chceck periodically system health
+ * TODO: Implement TIM3 for check periodically system health
  */
 
 /**

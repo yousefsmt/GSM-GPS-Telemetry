@@ -3,38 +3,77 @@
 #include "flash.h"
 #include "rcc.h"
 #include "gpio.h"
+#include "uart.h"
+#include "interrupt.h"
 
-static void vBlinkTask( void* args );
+#include "gps.h"
+#include "system_health.h"
+
+#define FLASH_WAIT_STATE ( 0x00 ) /* Set latency CPU <--> RAM */
+
+#define USART1_BAUD_RATE ( 9600 ) /* Receive NMEA message from NEO-6M */
+
+#ifdef DEBUG
+	#define USART2_BAUD_RATE ( 9600 ) /* Debug build type for printf */
+
+	/**
+	 * Implement putchar for printf syscall
+	 * to send character instead standard I/O Linux to usart2
+	 */
+	int __io_putchar( int ch )
+	{
+		while ( ( USART2->SR & USART_SR_TXE ) == 0 ) { }
+		USART2->DR = ch;
+		return ch;
+	}
+#endif /* DEBUG */
+
+#define USART3_BAUD_RATE ( 9600 ) /* Communicate by SIM800L */
+
+static void vStartupTask( void* pvParameters );
+static void vInitializePeripheral( void );
 
 int main()
 {
-	flash_set_latency( 0 );
+	vInitializePeripheral();
+
+	BaseType_t xReturn = xTaskCreate( &vStartupTask,
+									  "Task1",
+									  taskSTARTUP_STACK_SIZE,
+									  NULL,
+									  taskSTARTUP_STACK_PRIORITY,
+									  NULL );
+
+	configASSERT( xReturn == pdPASS );
+
+	vTaskStartScheduler();
+
+	for( ;; ) { }
+}
+
+static void vStartupTask( void* pvParameters )
+{
+	( void )pvParameters;
+
+	vGpsStartupTask();
+
+	vSystemHealthStartupTask();
+
+	vTaskDelete( NULL );
+}
+
+static void vInitializePeripheral( void )
+{
+	flash_set_latency( FLASH_WAIT_STATE );
 	rcc_init();
 	SystemCoreClockUpdate();
 	gpio_init();
 
-	xTaskCreate( &vBlinkTask, "Task1", 128, NULL, 1, NULL );
+	uart1_init( USART1_BAUD_RATE );
 
-	vTaskStartScheduler();
+	#ifdef DEBUG
+		uart2_init( USART2_BAUD_RATE );
+	#endif /* DEBUG */
 
-	for( ;; ){}
-}
-
-static void vBlinkTask( void* args )
-{
-	( void )args;
-
-	while ( 1 )
-	{
-		toggle_pin();
-		vTaskDelay( pdMS_TO_TICKS(500) );
-
-		toggle_pin();
-		vTaskDelay( pdMS_TO_TICKS(200) );
-	}
-}
-
-void vApplicationStackOverflowHook( TaskHandle_t xTask, char *pcTaskName)
-{
-
+	interrupt_set_priorites();
 }
