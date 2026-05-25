@@ -12,8 +12,9 @@ set(CMAKE_C_STANDARD 11)
 set(CMAKE_C_STANDARD_REQUIRED ON)
 set(CMAKE_C_EXTENSIONS ON)
 
-option(MONITOR_INTERNALL_TEMP "Enable internal temp monitoring" OFF)
-option(TEST_DMA               "Enable DMA test mode"            OFF)
+option(HSE_CLOCK_SPEED        "Using 8MHz crystal and PLL for use 72MHz system clock"       ON)  # !! for this method must be check crystal hardware
+option(MONITOR_INTERNALL_TEMP "If implement a method for need to monitor internal temp"     OFF)
+option(TEST_DMA               "Transfer NEO-6M GGA data from USART1 to memory"              ON)
 
 # Define the build type
 if(NOT CMAKE_BUILD_TYPE)
@@ -69,6 +70,7 @@ target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE
 )
 
 target_compile_definitions(${CMAKE_PROJECT_NAME} PRIVATE
+    $<$<BOOL:${HSE_CLOCK_SPEED}>:HSE_CLOCK_SPEED>
     $<$<BOOL:${MONITOR_INTERNALL_TEMP}>:MONITOR_INTERNALL_TEMP>
     $<$<BOOL:${TEST_DMA}>:TEST_DMA>
 )
