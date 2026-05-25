@@ -14,7 +14,6 @@ set(CMAKE_C_EXTENSIONS ON)
 
 option(HSE_CLOCK_SPEED        "Using 8MHz crystal and PLL for use 72MHz system clock"       ON)  # !! for this method must be check crystal hardware
 option(MONITOR_INTERNALL_TEMP "If implement a method for need to monitor internal temp"     OFF)
-option(TEST_DMA               "Transfer NEO-6M GGA data from USART1 to memory"              ON)
 
 # Define the build type
 if(NOT CMAKE_BUILD_TYPE)
@@ -55,9 +54,7 @@ target_sources(${CMAKE_PROJECT_NAME} PRIVATE
 	Peripheral/Src/timer.c
 	Peripheral/Src/uart.c
 	Peripheral/Src/flash.c
-
-	# Debug Version
-	$<$<CONFIG:Debug>:Peripheral/Src/dma.c>
+	Peripheral/Src/dma.c
 
 	# FreeRTOS
 	Middlewares/ThirdParty/FreeRTOS/portable/GCC/ARM_CM3/port.c
@@ -69,9 +66,6 @@ target_sources(${CMAKE_PROJECT_NAME} PRIVATE
 	Middlewares/ThirdParty/FreeRTOS/stream_buffer.c
 	Middlewares/ThirdParty/FreeRTOS/tasks.c
 	Middlewares/ThirdParty/FreeRTOS/timers.c
-	Middlewares/ThirdParty/lwgps/src/lwgps/lwgps.c
-	Middlewares/ThirdParty/lwrb/src/lwrb/lwrb_ex.c
-	Middlewares/ThirdParty/lwrb/src/lwrb/lwrb.c
 
 	ApplicationTasks/Src/gps.c
 	ApplicationTasks/Src/system_health.c
@@ -82,15 +76,12 @@ target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE
     Peripheral/Inc
 	Middlewares/ThirdParty/FreeRTOS/include
 	Middlewares/ThirdParty/FreeRTOS/portable/GCC/ARM_CM3
-	Middlewares/ThirdParty/lwgps/src/include
-	Middlewares/ThirdParty/lwrb/src/include
 	ApplicationTasks/Inc
 )
 
 target_compile_definitions(${CMAKE_PROJECT_NAME} PRIVATE
     $<$<BOOL:${HSE_CLOCK_SPEED}>:HSE_CLOCK_SPEED>
     $<$<BOOL:${MONITOR_INTERNALL_TEMP}>:MONITOR_INTERNALL_TEMP>
-    $<$<BOOL:${TEST_DMA}>:TEST_DMA>
 )
 
 # Remove wrong libob.a library dependency when using cpp files

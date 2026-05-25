@@ -3,7 +3,7 @@
 /**
  * NOTE: After ISR must be set 1 to IFCR each interrupt register (TEI, HTI, TCI)
  */
-void dma_init( uint8_t *buffer, const uint32_t buffer_size)
+void dma1_init( uint8_t *buffer, const uint32_t buffer_size)
 {
 	RCC->AHBENR |= RCC_AHBENR_DMA1EN;
 

@@ -1,11 +1,8 @@
 #include "gps.h"
 
 #include "queue.h"
-#include "lwrb/lwrb.h"
 
 static QueueHandle_t xGgaMessage;
-static lwrb_t        xRingBuffer;
-static uint8_t       ucDataBuffer[ISR_RING_BUFFER_SIZE];
 
 static void vGpsNmeaParser( void* pvParameters )
 {
@@ -38,7 +35,7 @@ static void vGpsRemoveTail( void* pvGpsBuffer )
 	static const uint8_t ASCIItable[ASCII_TABLE_SIZE]   = { 0x30U, 0x31U, 0x32U, 0x33U, 0x34U, 0x35U, 0x36U, 0x37U, 0x38U, 0x39U, 0x41U, 0x42U, 0x43U, 0x44U, 0x45U, 0x46U };
 	       const char    ucTailBuffer[TAIL_BUFFER_SIZE] = "$GPGGA";
 
-	( void )lwrb_init( &xRingBuffer, ucDataBuffer, sizeof( ucDataBuffer ) );
+	// ( void )lwrb_init( &xRingBuffer, ucDataBuffer, sizeof( ucDataBuffer ) );
 
 	/**
 	 * TODO: This super loop must be optimize in future
@@ -46,9 +43,9 @@ static void vGpsRemoveTail( void* pvGpsBuffer )
 	 */
 	while ( 0x01 )
 	{
-        if ( lwrb_get_full(&xRingBuffer) )
+        if ( 1 )
 		{
-            while ( lwrb_read(&xRingBuffer, &ucTempChar, 0x01) == 0x01 )
+            while ( 1 )
 			{
 				if ( ucTailIndex == 0x06U )
 				{
@@ -119,7 +116,8 @@ void USART1_IRQHandler( void )
     if ( USART1->SR & USART_SR_RXNE )
     {
 		uint8_t data = USART1->DR;
-		( void )lwrb_write(&xRingBuffer, &data, 1);
+		( void )data;
+		// ( void )lwrb_write(&xRingBuffer, &data, 1);
 	}
 
 	if ( ( USART1->SR & USART_SR_IDLE ) ) { }

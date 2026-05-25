@@ -4,12 +4,12 @@
 #include "mcu.h"
 
 /**
- * TODO: Implement TIM3 for check periodically system health
- */
-
-/**
- * Implement general TIM3 for system health monitor
- * check internal sensor periodically
+ * @brief Initialize and configure TIM3
+ * @param none
+ * @return none
+ *
+ * Implement trigger event for measure temperature of internal sensor with ADC1.
+ * When overflow send trigger then start measurement.
  */
 void tim3_init( void );
 

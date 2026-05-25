@@ -10,17 +10,14 @@ void interrupt_set_priorites( void )
 	NVIC_SetPriority(USART1_IRQn, 2);
 	NVIC_EnableIRQ(USART1_IRQn);
 
-	#ifdef TEST_DMA
-		/* USART3 interrupt ( SIM800L AT command ) */
-		NVIC_SetPriority(USART3_IRQn, 1);
-		NVIC_EnableIRQ(USART3_IRQn);
+	/* USART3 interrupt ( SIM800L AT command ) */
+	NVIC_SetPriority(USART3_IRQn, 1);
+	NVIC_EnableIRQ(USART3_IRQn);
 
-		/* DMA interrupt ( Test DMA )*/
-		NVIC_SetPriority(DMA1_Channel3_IRQn, 1);
-		NVIC_EnableIRQ(DMA1_Channel3_IRQn);
-	#else
-		/* USART3 interrupt ( SIM800L AT command ) */
-		NVIC_SetPriority(USART3_IRQn, 1);
-		NVIC_EnableIRQ(USART3_IRQn);
-	#endif /* TEST_DMA */
+	/* DMA interrupt ( Test DMA )*/
+	NVIC_SetPriority(DMA1_Channel3_IRQn, 1);
+	NVIC_EnableIRQ(DMA1_Channel3_IRQn);
+	/* USART3 interrupt ( SIM800L AT command ) */
+	NVIC_SetPriority(USART3_IRQn, 1);
+	NVIC_EnableIRQ(USART3_IRQn);
 }

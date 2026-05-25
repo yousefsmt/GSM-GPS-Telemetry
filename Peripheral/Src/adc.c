@@ -29,7 +29,7 @@ static void adc1_set_pll( void )
 
 /**
  * This function set all values in control register for ADC1
- * used by system health (check internall temp and AWD)
+ * used by system health (check internal temp and AWD)
  */
 static void adc1_config( void )
 {
@@ -45,7 +45,7 @@ static void adc1_config( void )
 	 * Set external trigger to TIM2_CC2_EVENT
 	 */
 	ADC1->CR2 |= ADC_CR2_EXTTRIG;
-	ADC1->CR2 |= ( TIM3_TRGO_EVENT << ADC_CR2_EXTSEL_Pos );
+	ADC1->CR2 |= ( TIM3_TRIGGER_EVENT << ADC_CR2_EXTSEL_Pos );
 
 	/* Enable internal temperature sensor */
 	ADC1->CR2 |= ADC_CR2_TSVREFE;
@@ -75,7 +75,7 @@ static void adc1_config( void )
  * Below function is very expensive for processor
  * TODO: You must optimize below two function for don't use floating-point number
  */
-static uint32_t temprature_to_adc_value( const float temp )
+static uint32_t temperature_to_adc_value( const float temp )
 {
 	const float REFERENCE_VOLTAGE = 3.3;    /* Reference Voltage*/
 	const float AVERAGE_SLOPE     = 0.0043; /* 4.3 mV/C */
@@ -97,7 +97,7 @@ static uint32_t temprature_to_adc_value( const float temp )
 	return adc_value;
 }
 
-static float adc_value_to_temprature( const uint32_t adc_value )
+static float adc_value_to_temperature( const uint32_t adc_value )
 {
 	const float REFERENCE_VOLTAGE = 3.3;    /* Reference Voltage*/
 	const float AVERAGE_SLOPE     = 0.0043; /* 4.3 mV/C */
@@ -121,7 +121,7 @@ static float adc_value_to_temprature( const uint32_t adc_value )
 
 void print_adc_temp( const uint32_t adc_value )
 {
-	float temp = adc_value_to_temprature( adc_value );
+	float temp = adc_value_to_temperature( adc_value );
 	#if !defined( DEBUG )
 	( void )temp
 	#endif /* !DEBUG */
@@ -130,8 +130,8 @@ void print_adc_temp( const uint32_t adc_value )
 
 void change_htr_lte( const float htr, const float ltr)
 {
-	ADC1->HTR = temprature_to_adc_value( htr );
-	ADC1->LTR = temprature_to_adc_value( ltr );
+	ADC1->HTR = temperature_to_adc_value( htr );
+	ADC1->LTR = temperature_to_adc_value( ltr );
 }
 #endif
 /*-------------------------------------------------------------------------------------------------*/

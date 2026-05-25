@@ -70,9 +70,7 @@ void uart3_init( const uint32_t baud_rate )
 	USART3->CR1 &= ~( USART_CR1_M );
 	USART3->CR2 &= ~( USART_CR2_STOP );
 
-	#ifdef TEST_DMA
-		USART3->CR3 |= USART_CR3_DMAR;
-	#endif /* TEST_DMA */
+	USART3->CR3 |= USART_CR3_DMAR;
 
 	/* Set manually baud rate */
 	USART3->BRR = ( ( ( usartdiv / 16 ) << USART_BRR_DIV_Mantissa_Pos ) | ( ( usartdiv % 16 ) << USART_BRR_DIV_Fraction_Pos ) );
