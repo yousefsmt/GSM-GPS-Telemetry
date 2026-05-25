@@ -3,6 +3,6 @@
 
 #include "mcu.h"
 
-void dma_init( char *buffer, const uint32_t buffer_size );
+void dma_init( uint8_t *buffer, const uint32_t buffer_size);
 
 #endif /* PERIPHERAL_DMA_H_ */

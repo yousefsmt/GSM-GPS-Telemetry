@@ -4,59 +4,113 @@
 	static uint32_t clock_src = CLOCK_SW_HSI;
 #endif /* DEBUG */
 
-void rcc_init( void )
-{
-	/* Use double-word aligned memory */
-	SCB->CCR |= SCB_CCR_STKALIGN_Msk;
+#ifdef HSE_CLOCK_SPEED
+	void rcc_init( void )
+	{
+		/* Use double-word aligned memory */
+		SCB->CCR |= SCB_CCR_STKALIGN_Msk;
 
-	/* Turn on HSI */
-	RCC->CR |= RCC_CR_HSION;
-	while ( ( RCC->CR & RCC_CR_HSIRDY ) == 0 ) { }
+		RCC->CR &= ~( RCC_CR_PLLON | RCC_CR_HSEON | RCC_CR_CSSON );
+		while ( ( RCC->CR & RCC_CR_PLLRDY) != 0 || ( RCC->CR & RCC_CR_HSERDY) != 0 ) { }
+		
+		RCC->CR |= RCC_CR_HSION;
+		while ( ( RCC->CR & RCC_CR_HSIRDY ) == 0 ) { }
 
-	/* Switch SYSCLK clock source to HSI */
-	RCC->CFGR &= ~RCC_CFGR_SW;
-	RCC->CFGR |= RCC_CFGR_SW_HSI;
-    while ((RCC->CFGR & RCC_CFGR_SWS) != RCC_CFGR_SWS_HSI) { }
+		RCC->CFGR &= ~( RCC_CFGR_MCO | RCC_CFGR_PLLMULL);
+		RCC->CFGR |= RCC_CFGR_PLLMULL9;
 
-	/* Disable CSS, HSE and PLL */
-	RCC->CR &= ~( RCC_CR_CSSON | RCC_CR_HSEON | RCC_CR_PLLON );
-	while ( ( RCC->CR & ( RCC_CR_HSERDY | RCC_CR_PLLRDY ) ) != 0 ) { }
+		RCC->CFGR |= ( 0x01 << RCC_CFGR_PLLSRC_Pos );
+		RCC->CFGR &= ~( RCC_CFGR_PLLXTPRE );
 
-	/**
-	 * Disable Below Options:
-	 * MCO, PLL multiplexer
-	 * PLL HSE divider
-	 * PLL source
-	 * ADC prescaler
-	 * APB2 prescaler
-	 * APB1 prescaler
-	 * AHB prescaler
-	 */
-	RCC->CFGR &= ~( RCC_CFGR_MCO | RCC_CFGR_USBPRE | RCC_CFGR_PLLMULL |
-					RCC_CFGR_PLLXTPRE | RCC_CFGR_PLLSRC | RCC_CFGR_ADCPRE |
-					RCC_CFGR_PPRE2 | RCC_CFGR_PPRE1 | RCC_CFGR_HPRE );
+		RCC->CFGR &= ~( RCC_CFGR_HPRE | RCC_CFGR_PPRE2 | RCC_CFGR_PPRE1 );
+		RCC->CFGR |= RCC_CFGR_PPRE1_DIV2;
 
-	#ifdef DEBUG
-		switch ( ( RCC->CFGR & RCC_CFGR_SW ) )
-		{
-		case 0b00:
-			clock_src = CLOCK_SW_HSI;
-			break;
-		case 0b01:
-			clock_src = CLOCK_SW_HSE;
-			break;
-		case 0b10:
-			clock_src = CLOCK_SW_PLLCLK;
-			break;
-		case 0b11:
-			clock_src = CLOCK_NO;
-			break;
-		default:
-			break;
-		}
-	#endif /* DEBUG */
+		RCC->CR   |= ( RCC_CR_CSSON | RCC_CR_HSEON );
+		while ( (RCC->CR & RCC_CR_HSERDY ) == 0 ) { }
 
-}
+		RCC->CFGR |= ( 0x01 << RCC_CFGR_PLLSRC_Pos );
+		RCC->CR   |= RCC_CR_PLLON;
+		while ( ( RCC->CR & RCC_CR_PLLRDY ) == 0 ) { }
+
+		RCC->CFGR |= RCC_CFGR_SW_PLL;
+		while ( ( RCC->CFGR & RCC_CFGR_SWS ) != RCC_CFGR_SWS_PLL ) { }
+		
+		#ifdef DEBUG
+			switch ( ( RCC->CFGR & RCC_CFGR_SW ) )
+			{
+			case 0b00:
+				clock_src = CLOCK_SW_HSI;
+				break;
+			case 0b01:
+				clock_src = CLOCK_SW_HSE;
+				break;
+			case 0b10:
+				clock_src = CLOCK_SW_PLLCLK;
+				break;
+			case 0b11:
+				clock_src = CLOCK_NO;
+				break;
+			default:
+				break;
+			}
+		#endif /* DEBUG */
+
+	}
+#else
+	void rcc_init( void )
+	{
+		/* Use double-word aligned memory */
+		SCB->CCR |= SCB_CCR_STKALIGN_Msk;
+
+		/* Turn on HSI */
+		RCC->CR |= RCC_CR_HSION;
+		while ( ( RCC->CR & RCC_CR_HSIRDY ) == 0 ) { }
+
+		/* Switch SYSCLK clock source to HSI */
+		RCC->CFGR &= ~RCC_CFGR_SW;
+		RCC->CFGR |= RCC_CFGR_SW_HSI;
+		while ((RCC->CFGR & RCC_CFGR_SWS) != RCC_CFGR_SWS_HSI) { }
+
+		/* Disable CSS, HSE and PLL */
+		RCC->CR &= ~( RCC_CR_CSSON | RCC_CR_HSEON | RCC_CR_PLLON );
+		while ( ( RCC->CR & ( RCC_CR_HSERDY | RCC_CR_PLLRDY ) ) != 0 ) { }
+
+		/**
+		 * Disable Below Options:
+		 * MCO, PLL multiplexer
+		 * PLL HSE divider
+		 * PLL source
+		 * ADC prescaler
+		 * APB2 prescaler
+		 * APB1 prescaler
+		 * AHB prescaler
+		 */
+		RCC->CFGR &= ~( RCC_CFGR_MCO | RCC_CFGR_USBPRE | RCC_CFGR_PLLMULL |
+						RCC_CFGR_PLLXTPRE | RCC_CFGR_PLLSRC | RCC_CFGR_ADCPRE |
+						RCC_CFGR_PPRE2 | RCC_CFGR_PPRE1 | RCC_CFGR_HPRE );
+
+		#ifdef DEBUG
+			switch ( ( RCC->CFGR & RCC_CFGR_SW ) )
+			{
+			case 0b00:
+				clock_src = CLOCK_SW_HSI;
+				break;
+			case 0b01:
+				clock_src = CLOCK_SW_HSE;
+				break;
+			case 0b10:
+				clock_src = CLOCK_SW_PLLCLK;
+				break;
+			case 0b11:
+				clock_src = CLOCK_NO;
+				break;
+			default:
+				break;
+			}
+		#endif /* DEBUG */
+
+	}
+#endif
 
 #ifdef DEBUG
 
