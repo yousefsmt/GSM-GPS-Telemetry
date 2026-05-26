@@ -26,11 +26,13 @@ static void vSystemHealthBlink( void )
 static void vSystemHealthCheck( void* pvParameters )
 {
 	( void )pvParameters;
+	BaseType_t           xState;
 	SystemHealthStatus_t xError;
 
 	while( 1 )
 	{
-		if( xQueueReceive( xSystemHealthQueue, &xError, portMAX_DELAY ) )
+		xState = xQueueReceive( xSystemHealthQueue, &xError, portMAX_DELAY );
+		if( xState == pdTRUE )
 		{
 			/* Can store all runtime errors
 			if (xError < ERROR_MAX_NUMBER)

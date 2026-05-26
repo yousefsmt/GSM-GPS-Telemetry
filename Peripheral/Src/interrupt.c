@@ -3,21 +3,10 @@
 void interrupt_set_priorites( void )
 {
 	/* ADC interrupt ( System Health ) */
-	NVIC_SetPriority(ADC1_2_IRQn, 3);
-	NVIC_EnableIRQ(ADC1_2_IRQn);
+	// NVIC_SetPriority(ADC1_2_IRQn, 2);
+	// NVIC_EnableIRQ(ADC1_2_IRQn);
 
-	/* USART1 interrupt ( NEO-6M GPS message ) */
-	NVIC_SetPriority(USART1_IRQn, 2);
-	NVIC_EnableIRQ(USART1_IRQn);
-
-	/* USART3 interrupt ( SIM800L AT command ) */
-	NVIC_SetPriority(USART3_IRQn, 1);
-	NVIC_EnableIRQ(USART3_IRQn);
-
-	/* DMA interrupt ( Test DMA )*/
-	NVIC_SetPriority(DMA1_Channel3_IRQn, 1);
-	NVIC_EnableIRQ(DMA1_Channel3_IRQn);
-	/* USART3 interrupt ( SIM800L AT command ) */
-	NVIC_SetPriority(USART3_IRQn, 1);
+	/* USART3 interrupt ( NEO-6M Message ) */
+	NVIC_SetPriority(USART3_IRQn, 6);
 	NVIC_EnableIRQ(USART3_IRQn);
 }

@@ -27,7 +27,7 @@ void adc1_awd_init();
  */
 void adc1_init( void );
 
-#if defined( DEBUG ) && defined( MONITOR_INTERNALL_TEMP )
+#if defined( DEBUG ) && defined( MONITOR_INTERNAL_TEMP )
 	/**
 	 * @brief  Convert ADC value to Celsius unit
 	 * @param  adc_value ADC extract value
@@ -46,6 +46,6 @@ void adc1_init( void );
 	 * Input value with celsius unit and convert these to acd val
 	 */
 	void change_htr_lte( const float htr, const float ltr);
-#endif /* DEBUG && MONITOR_INTERNALL_TEMP */
+#endif /* DEBUG && MONITOR_INTERNAL_TEMP */
 
 #endif /* PERIPHERAL_ADC_H_ */

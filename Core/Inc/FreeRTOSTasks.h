@@ -8,10 +8,10 @@
 #define taskSTARTUP_STACK_PRIORITY         (configMAX_PRIORITIES - 1 )
 
 #define taskSYSTEM_HEALTH_STACK_SIZE       ( 128 )
-#define taskSYSTEM_HEALTH_STACK_PRIORITY   ( configMAX_PRIORITIES - 2 )
+#define taskSYSTEM_HEALTH_STACK_PRIORITY   ( configMAX_PRIORITIES - 1 )
 
-#define taskGPS_REMOVE_TAIL_STACK_SIZE     ( 128 )
-#define taskGPS_REMOVE_TAIL_STACK_PRIORITY (configMAX_PRIORITIES - 1 )
+#define taskGPS_PACK_STACK_SIZE     ( 128 )
+#define taskGPS_PACK_STACK_PRIORITY (configMAX_PRIORITIES - 5 )
 
 #define taskGPS_PARSER_STACK_SIZE          ( 128 )
 #define taskGPS_PARSER_STACK_PRIORITY      ( configMAX_PRIORITIES - 1 )

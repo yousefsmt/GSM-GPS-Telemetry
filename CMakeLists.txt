@@ -13,7 +13,7 @@ set(CMAKE_C_STANDARD_REQUIRED ON)
 set(CMAKE_C_EXTENSIONS ON)
 
 option(HSE_CLOCK_SPEED        "Using 8MHz crystal and PLL for use 72MHz system clock"       ON)  # !! for this method must be check crystal hardware
-option(MONITOR_INTERNALL_TEMP "If implement a method for need to monitor internal temp"     OFF)
+option(MONITOR_INTERNAL_TEMP "If implement a method for need to monitor internal temp"     OFF)
 
 # Define the build type
 if(NOT CMAKE_BUILD_TYPE)
@@ -81,7 +81,7 @@ target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE
 
 target_compile_definitions(${CMAKE_PROJECT_NAME} PRIVATE
     $<$<BOOL:${HSE_CLOCK_SPEED}>:HSE_CLOCK_SPEED>
-    $<$<BOOL:${MONITOR_INTERNALL_TEMP}>:MONITOR_INTERNALL_TEMP>
+    $<$<BOOL:${MONITOR_INTERNAL_TEMP}>:MONITOR_INTERNAL_TEMP>
 )
 
 # Remove wrong libob.a library dependency when using cpp files

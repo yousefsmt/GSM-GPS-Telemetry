@@ -44,6 +44,7 @@
 #define configSTACK_DEPTH_TYPE                  uint32_t
 #define configMESSAGE_BUFFER_LENGTH_TYPE        size_t
 #define configRECORD_STACK_HIGH_ADDRESS         1
+#define configUSE_STREAM_BUFFERS                1
 
 /* Memory allocation related definitions. */
 #define configSUPPORT_STATIC_ALLOCATION             0

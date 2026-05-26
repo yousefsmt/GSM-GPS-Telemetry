@@ -8,9 +8,7 @@
 #include "interrupt.h"
 
 #include "gps.h"
-#include "system_health.h"
-
-volatile uint32_t new_pos;
+// #include "system_health.h"
 
 #define USART1_BAUD_RATE   ( 115200U )
 
@@ -34,8 +32,6 @@ int __io_putchar( int ch )
 }
 #endif /* DEBUG */
 
-#define USART3_BAUD_RATE ( 9600 ) /* Communicate by SIM800L */
-
 static void vStartupTask( void* pvParameters );
 static void vInitializePeripheral( void );
 
@@ -44,29 +40,16 @@ int main( void )
 	vInitializePeripheral();
 
 	BaseType_t xReturn = xTaskCreate( &vStartupTask,
-									  "Task1",
+									  "StartUP",
 									  taskSTARTUP_STACK_SIZE,
 									  NULL,
 									  taskSTARTUP_STACK_PRIORITY,
 									  NULL );
-
 	configASSERT( xReturn == pdPASS );
 
 	vTaskStartScheduler();
 
 	for( ;; ) { }
-}
-
-void USART3_IRQHandler( void )
-{
-    if ( USART3->SR & USART_SR_IDLE )
-    {
-        volatile uint32_t tmp;
-        tmp = USART3->DR;
-        (void)tmp;
-
-        new_pos = 256 - DMA1_Channel3->CNDTR;
-    }
 }
 
 static void vStartupTask( void* pvParameters )
@@ -75,7 +58,7 @@ static void vStartupTask( void* pvParameters )
 
 	vGpsStartupTask();
 
-	vSystemHealthStartupTask();
+	// vSystemHealthStartupTask();
 
 	vTaskDelete( NULL );
 }
@@ -86,8 +69,6 @@ static void vInitializePeripheral( void )
 	rcc_init();
 	SystemCoreClockUpdate();
 	gpio_init();
-
-	uart1_init( USART1_BAUD_RATE );
 
 	#ifdef DEBUG
 		uart2_init( USART2_BAUD_RATE );

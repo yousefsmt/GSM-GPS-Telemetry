@@ -3,8 +3,8 @@
 void gpio_init( void )
 {
 	/**
-	 * Port A used by USART1 ( NEO-6M ) & USART2 ( Debug version "printf" )
-	 * Port B used by USART3
+	 * Port A used by USART3 ( NEO-6M ) & USART2 ( Debug version "printf" )
+	 * Port B used by USART1 SIM800L
 	 */
 	RCC->APB2ENR |= ( RCC_APB2ENR_IOPAEN | RCC_APB2ENR_IOPBEN );
 

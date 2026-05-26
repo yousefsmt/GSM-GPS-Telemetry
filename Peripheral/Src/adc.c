@@ -70,7 +70,7 @@ static void adc1_config( void )
 }
 
 /*-------------------------------------------------------------------------------------------------*/
-#ifdef MONITOR_INTERNALL_TEMP
+#ifdef MONITOR_INTERNAL_TEMP
 /**
  * Below function is very expensive for processor
  * TODO: You must optimize below two function for don't use floating-point number
