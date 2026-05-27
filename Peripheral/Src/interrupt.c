@@ -7,6 +7,6 @@ void interrupt_set_priorites( void )
 	// NVIC_EnableIRQ(ADC1_2_IRQn);
 
 	/* USART3 interrupt ( NEO-6M Message ) */
-	NVIC_SetPriority(USART3_IRQn, 6);
-	NVIC_EnableIRQ(USART3_IRQn);
+	NVIC_SetPriority( USART3_IRQn, USART3_ISR_PRIORITY );
+	NVIC_EnableIRQ( USART3_IRQn );
 }

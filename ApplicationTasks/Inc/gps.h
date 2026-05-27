@@ -6,9 +6,10 @@
 #include "FreeRTOSTasks.h"
 #include "mcu.h"
 
+#define GPS_DMA_BUFFER_SIZE         ( 256U )    /*!< Size of memory used by DMA */
 #define USART3_BAUD_RATE            ( 115200U ) /*!< Receiver baud rate */
-#define STREAM_BUFFER_SIZE          ( 85U ) /*!< ISR ring buffer size */
-#define STREAM_BUFFER_TRIGGER_LEVEL ( 20U ) /*!< ISR ring buffer size */
+#define STREAM_BUFFER_SIZE          ( 256U )    /*!< Store one NMEA burst message */
+#define STREAM_BUFFER_TRIGGER_LEVEL ( 1U )      /*!< if store data equal or greater trigger */
 
 /**
  * @brief  GPS Startup Task

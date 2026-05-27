@@ -40,7 +40,7 @@ int main( void )
 	vInitializePeripheral();
 
 	BaseType_t xReturn = xTaskCreate( &vStartupTask,
-									  "StartUP",
+									  "StartUp",
 									  taskSTARTUP_STACK_SIZE,
 									  NULL,
 									  taskSTARTUP_STACK_PRIORITY,
