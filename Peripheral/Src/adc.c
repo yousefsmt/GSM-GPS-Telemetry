@@ -20,8 +20,8 @@ static void adc1_set_pll( void )
 	 * NOTE: In some reference say if ADCCLK in lower better accuracy ( I must to be check deeply!! )
 	 */
 
-	/* Set /2 ADC PLL */
-	RCC->CFGR |= RCC_CFGR_ADCPRE_DIV2;
+	/* Set /6 ADC PLL */
+	RCC->CFGR |= RCC_CFGR_ADCPRE_DIV6;
 
 	/* Enable ADC1 source clock */
 	RCC->APB2ENR |= RCC_APB2ENR_ADC1EN;
@@ -54,7 +54,7 @@ static void adc1_config( void )
 	 * Set sampling time 71.5 cycles = ( 71.5 * 0.25 ) = 17.875 us It's approximately good!!
 	 * read each 17.875 us data from ADC1_IN16 and ADC1_IN17 for V_sense and V_refint
 	 */
-	ADC1->SMPR1 |= ( ( 0x06 << ADC_SMPR1_SMP16_Pos ) | ( 0x06 << ADC_SMPR1_SMP17_Pos ) );
+	ADC1->SMPR1 |= ( ( 0x07 << ADC_SMPR1_SMP16_Pos ) | ( 0x07 << ADC_SMPR1_SMP17_Pos ) );
 
 	/**
 	 * At this point I just read V_sense

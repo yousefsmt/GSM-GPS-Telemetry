@@ -13,7 +13,7 @@
  */
 typedef enum
 {
-	ERROR_TEMPERATURE_THRESHOLD_EXCEEDED,
+	ERROR_TEMPERATURE_THRESHOLD_EXCEEDED = 1,
 	ERROR_MAX_NUMBER
 }SystemHealthStatus_t;
 
@@ -24,6 +24,6 @@ typedef enum
  * 
  * Initialize buffer and run other tasks
  */
-void vSystemHealthStartupTask( void );
+void vSystemHealthStartupTask( void* pvParameters );
 
 #endif /* APPLICATION_TASKS_SYSTEM_HEALTH_H_ */

@@ -18,6 +18,6 @@
  * 
  * Initialize buffer and run other tasks
  */
-void vGpsStartupTask( void );
+void vGpsStartupTask( void* pvParameters );
 
 #endif /* APPLICATION_TASKS_GPS_H_ */

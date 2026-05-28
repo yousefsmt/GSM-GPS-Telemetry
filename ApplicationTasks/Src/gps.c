@@ -56,7 +56,6 @@ static void vGpsPackTask( void* pvParameters )
             }
             else if ( ulCurrentPosition < ulLastPosition )
             {
-
                 size_t xFirstPartLen = GPS_DMA_BUFFER_SIZE - ulLastPosition;
                 ( void )xStreamBufferSend( xGpsStreamBuffer, &ucDmaBuffer[ulLastPosition], xFirstPartLen, 0 );
                 ( void )xStreamBufferSend( xGpsStreamBuffer, ucDmaBuffer, ulCurrentPosition, 0 );
@@ -67,8 +66,9 @@ static void vGpsPackTask( void* pvParameters )
     }
 }
 
-void vGpsStartupTask( void )
+void vGpsStartupTask( void* pvParameters )
 {
+    ( void )pvParameters;
     const size_t xStreamBufferSizeBytes = STREAM_BUFFER_SIZE;
     const size_t xTriggerLevel          = STREAM_BUFFER_TRIGGER_LEVEL;
     BaseType_t   xCreationState;
@@ -76,7 +76,7 @@ void vGpsStartupTask( void )
     xGpsStreamBuffer = xStreamBufferCreate( xStreamBufferSizeBytes, xTriggerLevel );
     configASSERT( xGpsStreamBuffer != NULL );
 
-    xCreationState = xTaskCreate( &vGpsPackTask,
+    xCreationState = xTaskCreate( vGpsPackTask,
                                   "GPSpack",
                                   taskGPS_PACK_STACK_SIZE,
                                   NULL,
@@ -84,7 +84,7 @@ void vGpsStartupTask( void )
                                   &xGpsPackTaskHandle );
     configASSERT( xCreationState == pdPASS );
 
-    xCreationState = xTaskCreate( &vGpsNmeaParser,
+    xCreationState = xTaskCreate( vGpsNmeaParser,
                                   "GPSparser",
                                   taskGPS_PARSER_STACK_SIZE,
                                   NULL,

@@ -13,7 +13,7 @@ void tim3_init( void )
 	 * Timer 2 Clock = ( Clock Source ) / ( TIM3->PSC + 1 ) = 10000 = 10 kHz
 	 * Auto Reload = ( Timer 2 Clock ) / ( TIM3->ARR + 1 )  = 1
 	 */
-	TIM3->PSC = 799;
+	TIM3->PSC = 7199;
 	TIM3->ARR = 9999;
 
 	/**

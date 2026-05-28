@@ -5,20 +5,18 @@
 #include "adc.h"
 #include "timer.h"
 
-
-static QueueHandle_t xSystemHealthQueue;
-
+static TaskHandle_t xHealthHandler;
 
 static void vSystemHealthBlink( void )
 {
 	while ( 1 )
 	{
 		toggle_pin();
-		vTaskDelay( pdMS_TO_TICKS( 200 ) );
+		vTaskDelay( pdMS_TO_TICKS( 50 ) );
 
 
 		toggle_pin();
-		vTaskDelay( pdMS_TO_TICKS( 200 ) );
+		vTaskDelay( pdMS_TO_TICKS( 50 ) );
 	}
 }
 
@@ -26,13 +24,13 @@ static void vSystemHealthBlink( void )
 static void vSystemHealthCheck( void* pvParameters )
 {
 	( void )pvParameters;
-	BaseType_t           xState;
+	BaseType_t           xResult;
 	SystemHealthStatus_t xError;
 
 	while( 1 )
 	{
-		xState = xQueueReceive( xSystemHealthQueue, &xError, portMAX_DELAY );
-		if( xState == pdTRUE )
+		xResult = xTaskNotifyWait( 0, 0, (uint32_t*)&xError, portMAX_DELAY );
+		if( xResult == pdPASS )
 		{
 			/* Can store all runtime errors
 			if (xError < ERROR_MAX_NUMBER)
@@ -54,23 +52,19 @@ static void vSystemHealthCheck( void* pvParameters )
 }
 
 
-void vSystemHealthStartupTask( void )
+void vSystemHealthStartupTask( void* pvParameters )
 {
+	( void )pvParameters;
 	tim3_init();
 	adc1_init();
 	adc1_awd_init();
-
-	xSystemHealthQueue = xQueueCreate( QUEUE_SYSTEM_HEALTH_LENGTH, QUEUE_SYSTEM_HEALTH_ITEM_SIZE );
-	configASSERT( xSystemHealthQueue != NULL );
-
-  	vQueueAddToRegistry( xSystemHealthQueue, "SystemHealthQueue" );
 
 	BaseType_t xTaskReturn = xTaskCreate( vSystemHealthCheck,
 										  "SystemHealth",
 										  taskSYSTEM_HEALTH_STACK_SIZE,
 										  NULL,
 										  taskSYSTEM_HEALTH_STACK_PRIORITY,
-										  NULL );
+										  &xHealthHandler );
 
 	configASSERT( xTaskReturn == pdPASS );
 
@@ -95,18 +89,22 @@ void ADC1_2_IRQHandler( void )
 		BaseType_t           xSwitchRequired = pdFALSE;
 		SystemHealthStatus_t xError          = ERROR_TEMPERATURE_THRESHOLD_EXCEEDED;
 
-  		( void )xQueueSendFromISR(xSystemHealthQueue, &xError, &xSwitchRequired);
-
-  		portYIELD_FROM_ISR(xSwitchRequired);
-
 		ADC1->SR &= ~ADC_SR_AWD;
+		
+		if ( xHealthHandler != NULL )
+        {
+			xTaskNotifyFromISR( xHealthHandler, xError, eSetValueWithOverwrite, &xSwitchRequired );
+        }
+		
+		portYIELD_FROM_ISR(xSwitchRequired);
 	}
-
+	
 	/**
 	 * Check end of conversion
 	 */
 	if (ADC1->SR & ADC_SR_EOC)
 	{
+		// toggle_pin();
 		/* Clear EOC flag */
 		ADC1->SR &= ~ADC_SR_EOC;
 	}

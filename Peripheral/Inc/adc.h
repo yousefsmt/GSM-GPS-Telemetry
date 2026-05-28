@@ -3,8 +3,8 @@
 
 #include "mcu.h"
 
-#define ADC1_AWD_HTR        ( 0x5c9U ) /*!< converted 80 C to hex adc value  */
-#define ADC1_AWD_LTR        ( 0x7a9U ) /*!< converted -10 C to hex adc value */
+#define ADC1_AWD_HTR        ( 1961U ) /*!< converted 80 C to hex adc value  */
+#define ADC1_AWD_LTR        ( 1481U ) /*!< converted -10 C to hex adc value */
 #define ADC1_SENSE_PIN      ( 0x10U )  /*!< V_{SENSE} pin for internal temp sensor  */
 #define ADC1_REFINT_PIN     ( 0x11U )  /*!< V_{REFINT} pin for internal temp sensor */
 #define TIM3_TRIGGER_EVENT  ( 0x04U )  /*!< External trigger for measure ADC temp */

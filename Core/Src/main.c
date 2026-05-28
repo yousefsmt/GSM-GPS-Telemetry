@@ -8,7 +8,7 @@
 #include "interrupt.h"
 
 #include "gps.h"
-// #include "system_health.h"
+#include "system_health.h"
 
 #define USART1_BAUD_RATE   ( 115200U )
 
@@ -39,7 +39,7 @@ int main( void )
 {
 	vInitializePeripheral();
 
-	BaseType_t xReturn = xTaskCreate( &vStartupTask,
+	BaseType_t xReturn = xTaskCreate( vStartupTask,
 									  "StartUp",
 									  taskSTARTUP_STACK_SIZE,
 									  NULL,
@@ -55,10 +55,23 @@ int main( void )
 static void vStartupTask( void* pvParameters )
 {
 	( void )pvParameters;
+	BaseType_t xReturn;
 
-	vGpsStartupTask();
+	xReturn = xTaskCreate( vGpsStartupTask,
+						   "GpsStartup",
+						   taskGPS_STARTUP_STACK_SIZE,
+						   NULL,
+						   taskGPS_STARTUP_STACK_PRIORITY,
+						   NULL );
+	configASSERT( xReturn == pdPASS );
 
-	// vSystemHealthStartupTask();
+	xReturn = xTaskCreate( vSystemHealthStartupTask,
+						   "Health",
+						   taskHEALTH_STARTUP_STACK_SIZE,
+						   NULL,
+						   taskHEALTH_STARTUP_STACK_PRIORITY,
+						   NULL );
+	configASSERT( xReturn == pdPASS );
 
 	vTaskDelete( NULL );
 }
@@ -79,5 +92,12 @@ static void vInitializePeripheral( void )
 
 void vApplicationStackOverflowHook( TaskHandle_t xTask, char *pcTaskName)
 {
-	
+	while ( 1 )
+	{
+		toggle_pin();
+		vTaskDelay( pdMS_TO_TICKS( 50 ) );
+
+		toggle_pin();
+		vTaskDelay( pdMS_TO_TICKS( 150 ) );
+	}
 }
