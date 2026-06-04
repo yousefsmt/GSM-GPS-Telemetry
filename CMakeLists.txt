@@ -69,6 +69,7 @@ target_sources(${CMAKE_PROJECT_NAME} PRIVATE
 
 	ApplicationTasks/Src/gps.c
 	ApplicationTasks/Src/system_health.c
+	Middlewares/ThirdParty/minmea/minmea.c
 )
 
 # Add include paths
@@ -77,6 +78,7 @@ target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE
 	Middlewares/ThirdParty/FreeRTOS/include
 	Middlewares/ThirdParty/FreeRTOS/portable/GCC/ARM_CM3
 	ApplicationTasks/Inc
+	Middlewares/ThirdParty/minmea
 )
 
 target_compile_definitions(${CMAKE_PROJECT_NAME} PRIVATE

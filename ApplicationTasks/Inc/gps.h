@@ -8,8 +8,7 @@
 
 #define GPS_DMA_BUFFER_SIZE         ( 256U )    /*!< Size of memory used by DMA */
 #define USART3_BAUD_RATE            ( 115200U ) /*!< Receiver baud rate */
-#define STREAM_BUFFER_SIZE          ( 256U )    /*!< Store one NMEA burst message */
-#define STREAM_BUFFER_TRIGGER_LEVEL ( 1U )      /*!< if store data equal or greater trigger */
+#define NMEA_MAX_MESSAGE_LENGTH     ( 85U )     /*!< Maximum message length */
 
 /**
  * @brief  GPS Startup Task

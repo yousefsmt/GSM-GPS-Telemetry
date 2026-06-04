@@ -2,30 +2,55 @@
 #include "uart.h"
 #include "dma.h"
 #include "stream_buffer.h"
+#include "minmea.h"
 
-static StreamBufferHandle_t xGpsStreamBuffer;
-static TaskHandle_t         xGpsPackTaskHandle = NULL;
+static TaskHandle_t xGpsPackTaskHandle = NULL;
+static uint8_t      ucDmaBuffer[GPS_DMA_BUFFER_SIZE];
 
-static void vGpsNmeaParser( void* pvParameters )
+static void vGpsNmeaParser( const uint32_t ulIndex, const size_t xLength )
 {
-    ( void )pvParameters;
-    uint8_t ucParsedMessage[STREAM_BUFFER_SIZE] = {0};
-    size_t  xResult = 0;
+    static uint8_t  ucPackedMessage[NMEA_MAX_MESSAGE_LENGTH];
+    static uint32_t ulPackedMessageIndex = 0;
 
-    while ( 1 )
+    uint32_t ulLoopIndex;
+    uint8_t  ucTempChar;
+
+    for ( ulLoopIndex = ulIndex; ulLoopIndex < xLength; ulLoopIndex++ )
     {
-        xResult = xStreamBufferReceive( xGpsStreamBuffer, ucParsedMessage, sizeof(ucParsedMessage), portMAX_DELAY );
-
-        if ( xResult > 0)
+        ucTempChar = ucDmaBuffer[ulLoopIndex];
+        if ( ucTempChar == '$' )
         {
-            /* * TODO: Parse NMEA sentences here (e.g., check for "$GPRMC" or "$GPGGA")
-             * You can use strtok() or a lightweight NMEA library.
-             */
-            LOG( "%s\n", ucParsedMessage );
-            /**
-             * TODO: After see directly NMEA message NEO-6M <---> PC, then write a good NMEA parser
-             */
+            ucPackedMessage[0]   = '$';
+            ulPackedMessageIndex = 1;
+            continue;
         }
+
+        if ( ucTempChar == '\n' )
+        {
+            ucPackedMessage[ulPackedMessageIndex] = '\n';
+            ulPackedMessageIndex++;
+            for ( ; ulPackedMessageIndex < NMEA_MAX_MESSAGE_LENGTH; ulPackedMessageIndex++)
+            {
+                ucPackedMessage[ulPackedMessageIndex] = '\0';
+            }
+            switch ( minmea_sentence_id( ( const char* )ucPackedMessage, false ) )
+            {
+                case MINMEA_SENTENCE_GGA:
+                    struct minmea_sentence_gga xExtractInfo;
+                    if (minmea_parse_gga( &xExtractInfo, ( const char* )ucPackedMessage ) == true )
+                    {
+                        toggle_pin();
+                    }
+                    break;
+                default:
+                    break;
+            }
+            ulPackedMessageIndex = 0;
+            continue;
+        }
+
+        ucPackedMessage[ulPackedMessageIndex] = ucTempChar;
+        ulPackedMessageIndex++;
     }
 }
 
@@ -34,12 +59,7 @@ static void vGpsPackTask( void* pvParameters )
     ( void )pvParameters;
     BaseType_t xResult;
     uint32_t   ulCurrentPosition = 0;
-    uint32_t   ulLastPosition = 0;
-    
-    static uint8_t ucDmaBuffer[GPS_DMA_BUFFER_SIZE]; 
-
-    dma1_init( ucDmaBuffer, GPS_DMA_BUFFER_SIZE );
-    uart3_init( USART3_BAUD_RATE );
+    uint32_t   ulLastPosition    = 0;
 
     while ( 1 )
     {
@@ -47,18 +67,14 @@ static void vGpsPackTask( void* pvParameters )
         
         if( xResult == pdPASS )
         {
-            size_t xDataLength = 0;
-
             if ( ulCurrentPosition > ulLastPosition )
             {
-                xDataLength = ulCurrentPosition - ulLastPosition;
-                ( void )xStreamBufferSend( xGpsStreamBuffer, &ucDmaBuffer[ulLastPosition], xDataLength, 0 );
+                vGpsNmeaParser( ulLastPosition, ulCurrentPosition );
             }
             else if ( ulCurrentPosition < ulLastPosition )
             {
-                size_t xFirstPartLen = GPS_DMA_BUFFER_SIZE - ulLastPosition;
-                ( void )xStreamBufferSend( xGpsStreamBuffer, &ucDmaBuffer[ulLastPosition], xFirstPartLen, 0 );
-                ( void )xStreamBufferSend( xGpsStreamBuffer, ucDmaBuffer, ulCurrentPosition, 0 );
+                vGpsNmeaParser( ulLastPosition, GPS_DMA_BUFFER_SIZE );
+                vGpsNmeaParser( 0, ulCurrentPosition );
             }
 
             ulLastPosition = ulCurrentPosition;
@@ -69,12 +85,10 @@ static void vGpsPackTask( void* pvParameters )
 void vGpsStartupTask( void* pvParameters )
 {
     ( void )pvParameters;
-    const size_t xStreamBufferSizeBytes = STREAM_BUFFER_SIZE;
-    const size_t xTriggerLevel          = STREAM_BUFFER_TRIGGER_LEVEL;
-    BaseType_t   xCreationState;
+    BaseType_t xCreationState;
 
-    xGpsStreamBuffer = xStreamBufferCreate( xStreamBufferSizeBytes, xTriggerLevel );
-    configASSERT( xGpsStreamBuffer != NULL );
+    dma1_init( ucDmaBuffer, GPS_DMA_BUFFER_SIZE );
+    uart3_init( USART3_BAUD_RATE );
 
     xCreationState = xTaskCreate( vGpsPackTask,
                                   "GPSpack",
@@ -82,14 +96,6 @@ void vGpsStartupTask( void* pvParameters )
                                   NULL,
                                   taskGPS_PACK_STACK_PRIORITY,
                                   &xGpsPackTaskHandle );
-    configASSERT( xCreationState == pdPASS );
-
-    xCreationState = xTaskCreate( vGpsNmeaParser,
-                                  "GPSparser",
-                                  taskGPS_PARSER_STACK_SIZE,
-                                  NULL,
-                                  taskGPS_PARSER_STACK_PRIORITY,
-                                  NULL );
     configASSERT( xCreationState == pdPASS );
 
     vTaskDelete( NULL );
