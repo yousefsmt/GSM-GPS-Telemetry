@@ -45,7 +45,44 @@ void uart2_init( const uint32_t baud_rate )
 
 void uart1_init( const uint32_t baud_rate )
 {
+	/**
+	 * NOTE: USART1 placed on APB2 bus, this bus used SYSCLK clock speed without any prescaler.
+	 */
+	uint32_t usartdiv = ( SystemCoreClock / baud_rate );
 
+	RCC->APB2ENR |= RCC_APB2ENR_USART1EN;
+
+	/* Clear PA10 (RX) and PA9 (TX) I/Os*/
+	GPIOA->CRH &= ~( GPIO_CRH_CNF9 | GPIO_CRH_MODE9 );
+	GPIOA->CRH &= ~( GPIO_CRH_CNF10 | GPIO_CRH_MODE10 );
+
+	/**
+	 * GPIO Configuration
+	 * PA10: Input Floating
+	 * PA9:  Alternate function push-pull
+	 */
+	GPIOA->CRH |= ( ( 0x02 << GPIO_CRH_CNF9_Pos ) | ( 0x01 << GPIO_CRH_MODE9_Pos ) );
+	GPIOA->CRH |= ( 0x01 << GPIO_CRH_CNF10_Pos );
+
+
+	/**
+	 * USART1 Configuration
+	 * Set 1 Start bit, 8 Data Bit, STOP zero
+	 */
+	USART1->CR1 = 0x00U;
+	USART1->CR1 &= ~( USART_CR1_M );
+	USART1->CR2 &= ~( USART_CR2_STOP );
+
+	/* Set baudrate */
+	USART1->BRR = ( ( ( usartdiv / 16 ) << USART_BRR_DIV_Mantissa_Pos ) | ( ( usartdiv % 16 ) << USART_BRR_DIV_Fraction_Pos ) );
+
+	/* Enable transmission and receiver */
+	USART3->CR1 |= ( USART_CR1_RE | USART_CR1_TE );
+
+	/* Interrupt enable */
+	USART3->CR1 |= USART_CR1_IDLEIE;
+
+	USART3->CR1 |= ( USART_CR1_UE );
 }
 
 void uart3_init( const uint32_t baud_rate )

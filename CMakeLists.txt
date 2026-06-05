@@ -69,6 +69,7 @@ target_sources(${CMAKE_PROJECT_NAME} PRIVATE
 
 	ApplicationTasks/Src/gps.c
 	ApplicationTasks/Src/system_health.c
+	ApplicationTasks/Src/sim800l.c
 	Middlewares/ThirdParty/minmea/minmea.c
 )
 
