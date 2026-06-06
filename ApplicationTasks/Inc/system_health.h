@@ -1,0 +1,29 @@
+#ifndef APPLICATION_TASKS_SYSTEM_HEALTH_H_
+#define APPLICATION_TASKS_SYSTEM_HEALTH_H_
+
+#include "FreeRTOSTasks.h"
+
+#include "mcu.h"
+
+#define QUEUE_SYSTEM_HEALTH_ITEM_SIZE ( ( UBaseType_t )sizeof(SystemHealthStatus_t) ) /*!< System health queue size */
+#define QUEUE_SYSTEM_HEALTH_LENGTH    ( ( UBaseType_t )10 )                           /*!< System health each element size */
+
+/**
+ * Error Types
+ */
+typedef enum
+{
+	ERROR_TEMPERATURE_THRESHOLD_EXCEEDED = 1,
+	ERROR_MAX_NUMBER
+}SystemHealthStatus_t;
+
+/**
+ * @brief  System Health Startup Task
+ * @param  none.
+ * @return none.
+ * 
+ * Initialize buffer and run other tasks
+ */
+void vSystemHealthStartupTask( void* pvParameters );
+
+#endif /* APPLICATION_TASKS_SYSTEM_HEALTH_H_ */

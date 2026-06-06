@@ -20,8 +20,8 @@ static void adc1_set_pll( void )
 	 * NOTE: In some reference say if ADCCLK in lower better accuracy ( I must to be check deeply!! )
 	 */
 
-	/* Set /2 ADC PLL */
-	RCC->CFGR |= RCC_CFGR_ADCPRE_DIV2;
+	/* Set /6 ADC PLL */
+	RCC->CFGR |= RCC_CFGR_ADCPRE_DIV6;
 
 	/* Enable ADC1 source clock */
 	RCC->APB2ENR |= RCC_APB2ENR_ADC1EN;
@@ -29,7 +29,7 @@ static void adc1_set_pll( void )
 
 /**
  * This function set all values in control register for ADC1
- * used by system health (check internall temp and AWD)
+ * used by system health (check internal temp and AWD)
  */
 static void adc1_config( void )
 {
@@ -45,7 +45,7 @@ static void adc1_config( void )
 	 * Set external trigger to TIM2_CC2_EVENT
 	 */
 	ADC1->CR2 |= ADC_CR2_EXTTRIG;
-	ADC1->CR2 |= ( TIM3_TRGO_EVENT << ADC_CR2_EXTSEL_Pos );
+	ADC1->CR2 |= ( TIM3_TRIGGER_EVENT << ADC_CR2_EXTSEL_Pos );
 
 	/* Enable internal temperature sensor */
 	ADC1->CR2 |= ADC_CR2_TSVREFE;
@@ -54,7 +54,7 @@ static void adc1_config( void )
 	 * Set sampling time 71.5 cycles = ( 71.5 * 0.25 ) = 17.875 us It's approximately good!!
 	 * read each 17.875 us data from ADC1_IN16 and ADC1_IN17 for V_sense and V_refint
 	 */
-	ADC1->SMPR1 |= ( ( 0x06 << ADC_SMPR1_SMP16_Pos ) | ( 0x06 << ADC_SMPR1_SMP17_Pos ) );
+	ADC1->SMPR1 |= ( ( 0x07 << ADC_SMPR1_SMP16_Pos ) | ( 0x07 << ADC_SMPR1_SMP17_Pos ) );
 
 	/**
 	 * At this point I just read V_sense
@@ -70,12 +70,12 @@ static void adc1_config( void )
 }
 
 /*-------------------------------------------------------------------------------------------------*/
-#ifdef MONITOR_INTERNALL_TEMP
+#ifdef MONITOR_INTERNAL_TEMP
 /**
  * Below function is very expensive for processor
  * TODO: You must optimize below two function for don't use floating-point number
  */
-static uint32_t temprature_to_adc_value( const float temp )
+static uint32_t temperature_to_adc_value( const float temp )
 {
 	const float REFERENCE_VOLTAGE = 3.3;    /* Reference Voltage*/
 	const float AVERAGE_SLOPE     = 0.0043; /* 4.3 mV/C */
@@ -97,7 +97,7 @@ static uint32_t temprature_to_adc_value( const float temp )
 	return adc_value;
 }
 
-static float adc_value_to_temprature( const uint32_t adc_value )
+static float adc_value_to_temperature( const uint32_t adc_value )
 {
 	const float REFERENCE_VOLTAGE = 3.3;    /* Reference Voltage*/
 	const float AVERAGE_SLOPE     = 0.0043; /* 4.3 mV/C */
@@ -121,17 +121,17 @@ static float adc_value_to_temprature( const uint32_t adc_value )
 
 void print_adc_temp( const uint32_t adc_value )
 {
-	float temp = adc_value_to_temprature( adc_value );
+	float temp = adc_value_to_temperature( adc_value );
 	#if !defined( DEBUG )
 	( void )temp
 	#endif /* !DEBUG */
-	LOG( "Temp: %f\n", temp );
+	// LOG( "Temp: %f\n", temp );
 }
 
 void change_htr_lte( const float htr, const float ltr)
 {
-	ADC1->HTR = temprature_to_adc_value( htr );
-	ADC1->LTR = temprature_to_adc_value( ltr );
+	ADC1->HTR = temperature_to_adc_value( htr );
+	ADC1->LTR = temperature_to_adc_value( ltr );
 }
 #endif
 /*-------------------------------------------------------------------------------------------------*/
@@ -168,33 +168,4 @@ void adc1_awd_init()
 
 	// Enable Analog watchdog interrupts
 	ADC1->CR1 |= (ADC_CR1_AWDIE);
-}
-
-
-/**
- * When interrupt occur this function check why happend?
- */
-void ADC1_2_IRQHandler( void )
-{
-	/**
-	 * TODO: Check AWD occur
-	 * TODO: Check End Of Conversion
-	 */
-
-	/**
-	 * Check AWD occur break high or low threshold
-	 */
-	if (ADC1->SR & ADC_SR_AWD)
-	{
-		ADC1->SR &= ~ADC_SR_AWD;
-	}
-
-	/**
-	 * Check end of conversion
-	 */
-	if (ADC1->SR & ADC_SR_EOC)
-	{
-		/* Clear EOC flag */
-		ADC1->SR &= ~ADC_SR_EOC;
-	}
 }

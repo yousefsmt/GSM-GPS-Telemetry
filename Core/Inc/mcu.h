@@ -5,7 +5,7 @@
 #include "stm32f1xx.h"
 
 #ifdef DEBUG
-	#define LOG( msg... ) printf( msg )
+	#define LOG( msg... ) printf( msg ) /*!< External trigger for measure ADC temp */
 
 	#define toggle_pin() \
 		if (GPIOC->ODR & GPIO_ODR_ODR13) 	\
@@ -17,7 +17,7 @@
 			GPIOC->BSRR = GPIO_BSRR_BS13;	\
 		}
 #else
-	#define toggle_pin()
+	#define toggle_pin() /*!< blink method for internal LED Blue Pill board */
 	#define LOG( msg... )
 #endif /* DEBUG */
 

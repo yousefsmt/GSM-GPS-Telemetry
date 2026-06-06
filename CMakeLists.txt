@@ -12,8 +12,8 @@ set(CMAKE_C_STANDARD 11)
 set(CMAKE_C_STANDARD_REQUIRED ON)
 set(CMAKE_C_EXTENSIONS ON)
 
-option(MONITOR_INTERNALL_TEMP "Enable internal temp monitoring" OFF)
-option(TEST_DMA               "Enable DMA test mode"            OFF)
+option(HSE_CLOCK_SPEED        "Using 8MHz crystal and PLL for use 72MHz system clock"       ON)  # !! for this method must be check crystal hardware
+option(MONITOR_INTERNAL_TEMP "If implement a method for need to monitor internal temp"     OFF)
 
 # Define the build type
 if(NOT CMAKE_BUILD_TYPE)
@@ -54,23 +54,37 @@ target_sources(${CMAKE_PROJECT_NAME} PRIVATE
 	Peripheral/Src/timer.c
 	Peripheral/Src/uart.c
 	Peripheral/Src/flash.c
+	Peripheral/Src/dma.c
 
-	# Debug Version
-	$<$<CONFIG:Debug>:Peripheral/Src/dma.c>
+	# FreeRTOS
+	Middlewares/ThirdParty/FreeRTOS/portable/GCC/ARM_CM3/port.c
+	Middlewares/ThirdParty/FreeRTOS/portable/MemMang/heap_4.c
+	Middlewares/ThirdParty/FreeRTOS/croutine.c
+	Middlewares/ThirdParty/FreeRTOS/event_groups.c
+	Middlewares/ThirdParty/FreeRTOS/list.c
+	Middlewares/ThirdParty/FreeRTOS/queue.c
+	Middlewares/ThirdParty/FreeRTOS/stream_buffer.c
+	Middlewares/ThirdParty/FreeRTOS/tasks.c
+	Middlewares/ThirdParty/FreeRTOS/timers.c
 
-	#System Health
-	Common/Src/system_health.c
+	ApplicationTasks/Src/gps.c
+	ApplicationTasks/Src/system_health.c
+	ApplicationTasks/Src/sim800l.c
+	Middlewares/ThirdParty/minmea/minmea.c
 )
 
 # Add include paths
 target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE
     Peripheral/Inc
-	Common/Inc
+	Middlewares/ThirdParty/FreeRTOS/include
+	Middlewares/ThirdParty/FreeRTOS/portable/GCC/ARM_CM3
+	ApplicationTasks/Inc
+	Middlewares/ThirdParty/minmea
 )
 
 target_compile_definitions(${CMAKE_PROJECT_NAME} PRIVATE
-    $<$<BOOL:${MONITOR_INTERNALL_TEMP}>:MONITOR_INTERNALL_TEMP>
-    $<$<BOOL:${TEST_DMA}>:TEST_DMA>
+    $<$<BOOL:${HSE_CLOCK_SPEED}>:HSE_CLOCK_SPEED>
+    $<$<BOOL:${MONITOR_INTERNAL_TEMP}>:MONITOR_INTERNAL_TEMP>
 )
 
 # Remove wrong libob.a library dependency when using cpp files
