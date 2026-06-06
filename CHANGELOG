@@ -4,6 +4,29 @@ All notable changes to this project will be documented in this file.
 
 This project follows the Keep a Changelog format.
 
+## [0.1.0-pre-2] - 2026-06-06
+
+### Added
+
+- Integrated FreeRTOS for task management and scheduling
+- Monitored system health using the internal temperature sensor
+- Received and parsed NMEA messages from the NEO-6M GPS module
+- Extracted GPS information and transmitted it via GSM or GPRS protocol (requires testing)
+- Switched system clock from HSI 8 MHz to 72 MHz using HSE 8 MHz with PLL
+
+### Fixed
+
+- Synchronization issue between UART3 ISR and the NMEA parser function
+- Synchronization issue between DMA write buffer and UART3 idle line detection
+- Reconfigured TIM3 and ADC to operate correctly with the new 72 MHz system clock
+
+### Notes
+
+This is a bare-metal pre-release intended for hardware validation and low-level protocol testing.
+If the APIs and communication layers behave as expected, this will serve as the foundation for the first stable release.
+
+---
+
 ## [0.1.0-pre] - 2026-05-17
 
 ### Added
@@ -20,4 +43,5 @@ If the APIs and communication layers behave as expected, this will serve as the 
 
 ---
 
-[0.1.0-pre]: https://github.com/olivierlacan/keep-a-changelog/releases/tag/v0.0.1-pre
+[0.1.0-pre]: [text](https://github.com/yousefsmt/GSM-GPS-Telemetry/tree/v0.1.0-pre)
+[0.1.0-pre-2]: [text](https://github.com/yousefsmt/GSM-GPS-Telemetry/tree/v0.1.0-pre-2)
