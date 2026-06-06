@@ -5,6 +5,7 @@
 #include "mcu.h"
 
 #define USART1_BAUD_RATE            ( 115200U ) /*!< Receiver baud rate */
+#define QUEUE_LENGTH ( 10 )
 
 /**
  * @brief  SIM800L Startup Task

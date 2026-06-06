@@ -9,6 +9,7 @@
 
 #include "gps.h"
 #include "system_health.h"
+#include "sim800l.h"
 
 #define USART1_BAUD_RATE   ( 115200U )
 
@@ -70,6 +71,14 @@ static void vStartupTask( void* pvParameters )
 						   taskHEALTH_STARTUP_STACK_SIZE,
 						   NULL,
 						   taskHEALTH_STARTUP_STACK_PRIORITY,
+						   NULL );
+	configASSERT( xReturn == pdPASS );
+
+	xReturn = xTaskCreate( vSimStartupTask,
+						   "sim800",
+						   taskSIM800_STARTUP_STACK_SIZE,
+						   NULL,
+						   taskSIM800_STARTUP_STACK_PRIORITY,
 						   NULL );
 	configASSERT( xReturn == pdPASS );
 
